@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73bf64beb318e6f4ba2b622a9e394a8d, type: 3}
+  m_Name: f1
+  m_EditorClassIdentifier: 
+  furniitureName: test1
+  furniture: {fileID: 1887932616174699449, guid: d5a651f64acd9ff45ab3205e916cdcce,
+    type: 3}
+  furnitureRed: {fileID: 5981273211715906027, guid: a701407eef5496d41964699c47bb889b,
+    type: 3}
+  widthSize: 3
+  heightSize: 1
