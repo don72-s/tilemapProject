@@ -208,7 +208,7 @@
 >![camera](https://github.com/don72-s/tilemapProject/assets/66211881/43dd446c-0c05-4481-9494-901dafd214be)
 >![cameraParent](https://github.com/don72-s/tilemapProject/assets/66211881/30851dca-132c-417d-9576-3c33ee449e8b)
 >
->**Z좌표인 푸른색 화살표가 아래를 향한 메인카메라(좌측)와 수평을 바라보고있는 부모 오브젝트(우측)**
+>**Z좌표인 푸른색 화살표가 아래를 향한 메인카메라와 수평을 바라보고있는 부모 오브젝트**
 >
 ><br>
 >회전의 입력은 스크롤바로 받게되며, 카메라의 부모 오브젝트를 회전시켜 메인카메라와 회전 중심축 사이의 연산을 최소화.<br><br>
