@@ -474,7 +474,7 @@
 
 >## 배치와_길찾기
 >
->캐릭터를 드래그하는 등의 이동에 의해 필요한 재배치 기능과 캐릭터의 경로탐색 기능을 구현한다.
+>캐릭터를 드래그하는 등의 이동에 필요한 재배치 기능과 캐릭터의 경로탐색 기능을 구현한다.
 >
 ><br>
 >
@@ -649,14 +649,251 @@
 
 <br><br>
 
+>
+> ## 행동_블록_정의
+>캐릭터의 행동을 세분화, 일반화 하여 단위행동들을 조합하여 여러 행동들을 수행할 수 있도록 설계   
+>![actionqueue](https://github.com/don72-s/tilemapProject/assets/66211881/39e22d5b-c5b8-4843-9591-1e115ebf7d3c)
+><br>
+>>### 기본 행동 블록 정의
+>>가장 기본이 되는 IDLE행동을 의미하는 기본**ActionBlock**클래스를 작성.   
+>><br>
+>>변수는 **해당 행동시에 가질 상태, 시스템적인 다른 입력을 받을 수 있는지의 여부, 실제로 행동할 캐릭터 객체** 세가지를 가지기로 한다.
+>>
+>>```cpp
+> > class ActionBlock
+> > {
+> > 
+> >     protected Character.STATE state;
+> >     protected Character.ACCEPTABLE acceptable;
+> >     protected ICharacterAction character;
+> > 
+> >     public ActionBlock() { }
+> >     public ActionBlock(Character.STATE _state, Character.ACCEPTABLE _acceptable, ICharacterAction _character)
+> >     {
+> >         state = _state;
+> >         acceptable = _acceptable;
+> >         character = _character;
+> >     }
+> > 
+> >     //실제 대기 행동을 실행시킴
+> >     public virtual void PlayAction()
+> >     {
+> >         character.PlayIdleAction();
+> >     }
+> > 
+> > }
+>>```
+><br><br>
+>
+>>### 움직임 행동 블록 정의
+>>움직임의 기본 단위는 중심기준 근처**8방향**거리 이내의 이동으로 정의하며 해당 블록은 위의 **기본 행동 블록**을 상속받는다.   
+>><br>
+>>또한 기본 행동블록의 **PlayAction** 메소드를 오버라이드하여 캐릭터의 시점에서는 일괄적으로 같은 메소드를 호출하는 형식으로 설계한다.
+>>```cpp
+> > class MoveActionBlock : ActionBlock
+> > {
+> > 
+> >     private Vector3 endPos;
+> > 
+> >     //생성자로 목적지 좌표 벡터를 추가로 받음.
+> >     public MoveActionBlock(Character.STATE _state, Character.ACCEPTABLE _acceptable, ICharacterAction _character, Vector3 _endPos)
+> >     {
+> >         state = _state;
+> >         acceptable = _acceptable;
+> >         endPos = _endPos;
+> >         character = _character;
+> >     }
+> > 
+> >     //기본행동블록 클래스의 PlayAction메소드를 오버라이드.
+> >     override public void PlayAction()
+> >     {
+> >         character.PlayMoveAction(endPos);
+> >     }
+> > 
+> > 
+> > }
+>>```
+><br><br>
+>
+>>### ICharacterAction 인터페이스 구현
+>>
+>>행동에 따른 대상 메소드의 존재를 보장하기 위해 전달받는 객체는 **ICharacterAction**인터페이스를 상속한 객체로 제한한다.   
+>><br>
+>>
+>>```cpp
+> > public interface ICharacterAction {
+> > 
+> >     void PlayIdleAction();
+> >     void PlayMoveAction(UnityEngine.Vector3 _endPos);
+> > }
+>>```
+>>
+>>ActionBlock을 이용하려면 위의 인터페이스를 상속한 객체를 전달해야하며 이를 위해 **Character**객체에 상속시키고, 대응 행동을 구현한다.   
+>><br>
+>>또한 액션큐에서 다음 행동을 꺼내 실행하는 **actionQueuePop**메소드를 정의한다.
+>>
+>>```cpp
+> > public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Observer, ICharacterAction{
+> > 
+> >     private List<ActionBlock> actionQueue;
+> > 
+> >     ...생략...
+> > 
+> >     void actionQueuePop()
+> >     {
+> >         ...생략...
+> > 
+> >         //행동블록 실행.
+> >         ActionBlock ab = actionQueue[0];
+> >         actionQueue.RemoveAt(0);
+> >         changeAcceptable(ab.getAcceptable());
+> >         ChangeState(ab.getState());
+> >         ab.PlayAction();
+> > 
+> >     }
+> > 
+> >     //인터페이스 구현
+> >     public void PlayIdleAction() { ... }
+> >     public void PlayMoveAction(Vector3 _endPos) { ... }
+> > 
+> > }
+>>
+>>```
 
-<br>
-<br>
-<br>
-<br>
 
-# 가구관리
+<br><br>
 
+
+
+
+
+># 가구관리
+>
+>맵 상에 가구의 설치, 회전, 삭제 등의 기능을 구현한다.   
+><br>
+>
+>>### 데이터 구조 정의
+>>
+>>class와 비슷한 개념으로 **FurnitureBlueprint**클래스를 정의하여 사용한다. 또한 추가 및 관리의 용이성을 위하여 **ScriptableObject**를 상속시킨다.   
+>><br>
+>>해당 클래스는 **기본 상태 오브젝트, 불가능 상태 오브젝트**정보를 가지며 추가적으로 차지하는 **가로, 세로**길이 정보를 가진다.
+>>![가구 데이터 구조](https://github.com/don72-s/tilemapProject/assets/66211881/ea6d0a92-47bb-428c-9e29-b9c6f74451d7)
+>>
+><br><br>
+>
+>>### 가구 설계도 관리
+>>
+>>위에 정의한 설계도를 모아서 관리하는 딕셔너리 역할을 하는 **FurnitureBlueprintDic**클래스를 정의한다. 이 또한 **ScriptableObject**를 상속하여 관리를 용이하게 한다.   
+>>![furdic](https://github.com/don72-s/tilemapProject/assets/66211881/afb9189b-578e-43ac-9b78-60d8749b597c)
+>
+><br><br>
+>
+>>### 가구의 생성
+>>
+>>class의 실체화된 instance의 역할을 할 **FurnitureInfo**클래스를 정의하고 가구의 이름에 따라 객체화 시켜 반환하는 간단한 **FurnitureFactory**를 정의한다.   
+>><br><br>**가구의 객체 클래스**
+>>```cpp
+> >
+> >internal class FurnitureInfo {
+> > 
+> >     ...생략...
+> > 
+> >     //가구의 위치변경과 회전 메소드
+> >     public void RotateFurniture() { ... }
+> >     public void SetPosition(Vector3 _pos) { ... }
+> > 
+> >     //가구의 출력 상태를 유효/유효하지 않음 상태로 변경
+> >     public void SetValid() { ... }
+> >     public void SetInvalid() { ... }
+> > 
+> >     //가구 자체 상태를 비활성화
+> >     public void SetInvisible() { ... }
+> > 
+> >     ...생략...
+> > }
+>>```
+>><br><br>**가구 팩토리**
+>>
+>>```cpp
+> > internal static class FurnitureFactory {
+> > 
+> >     private static Dictionary<string, FurnitureBluePrint> furnitureDictionay = null;
+> > 
+> >     ...생략...
+> > 
+> >     //전달된 이름을 가진 가구 종류의 FurnitureInfo타입 객체를 생성하여 반환
+> >     internal static FurnitureInfo MakeFurniture(string _type, string _furName)
+> >     {
+> >     
+> >         ...생략...
+> >         
+> >         return new FurnitureInfo(furnitureDictionay[_type], _furName);
+> >     }
+> > 
+> > }
+>>```
+>>
+><br><br>
+>
+>>### 가구의 등록
+>>새로운 가구를 맵에 등록하는 기능을 구현한다.
+>><br><br>
+>>>### 모드의 정의
+>>>터치입력의 혼선과 맵의 갱신을 위한 캐릭터 비활성화 등을 위해 edit모드라는 상태를 정의하여 이용한다.
+>>>
+>>>```cpp
+> > > public partial class MapManager : MonoBehaviour
+> > > {
+> > >
+> > >     public enum MapState { VIEW_MODE, EDIT_MODE};
+> > > 
+> > >     //현재 모드 상태 저장.
+> > >     private MapState mapState;
+> > > 
+> > >
+> > >     ...생략...
+>>>
+> > >     //모드변화시 호출될 메소드
+> > >     public void ChangeMapViewMode(MapState _mapViewMode) {
+> > > 
+> > >         mapState = _mapViewMode;
+> > > 
+> > >     }
+> > >     
+> > > }
+>><br><br>
+>>
+>>
+>>
+>>>### 맵 데이터에 등록
+>>>
+>>>등록 대상이 되는 **FurnitureInfo**객체와 해당 가구의 **좌상단, 우하단**좌표를 이용하여 현재 맵에 가구 정보를 등록한다.
+>>>
+>>>```cpp
+> > >     private bool RegistFurniture(Vector2 _curPos, Vector2 _leftTopVec, Vector2 _rightDownVec) {
+> > > 
+> > >         //공간 유효성 확인.
+> > >         if (!ValidCheck(_curPos, _leftTopVec, _rightDownVec)) {
+> > >             Debug.Log("가구 등록에 적합하지 않은 공간. [ 가구 등록 실패 ]");
+> > >             return false;
+> > >         }
+> > > 
+> > >         ...생략...
+> > > 
+> > >         //중심 타일에 FurnitureInfo객체와 사용중인 상태로 상태를 전환 할 타일들의 리스트를 전달
+> > >         flatList[y][x].RegistFurnitureObject(curForcusedFurniture, list);
+> > > 
+> > >         return true;
+> > > 
+> > >     }
+>>>```
+>><br><br>
+>>
+>>
+>>
+>>
+>
+>
 <br>
 <br>
 <br>
