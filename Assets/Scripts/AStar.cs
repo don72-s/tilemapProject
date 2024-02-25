@@ -225,7 +225,7 @@ public static class AStar
             if (openQueue[(_checkX, _checkY)].curCost > _fromNode.curCost + moveCost) {//기존 open을 갱신할지 여부
                 openQueue[(_checkX, _checkY)].parent = new Vector2Int(fromX, fromY);
                 openQueue[(_checkX, _checkY)].curCost = _fromNode.curCost + moveCost;
-
+                openQueue[(_checkX, _checkY)].predictCost = openQueue[(_checkX, _checkY)].curCost + openQueue[(_checkX, _checkY)].huristic;
             }
 
         }
@@ -238,6 +238,7 @@ public static class AStar
             openQueue[(_checkX, _checkY)].curCost = _fromNode.curCost + moveCost;
             openQueue[(_checkX, _checkY)].predictCost = openQueue[(_checkX, _checkY)].curCost + openQueue[(_checkX, _checkY)].huristic;
         }
+
 
 
     }
