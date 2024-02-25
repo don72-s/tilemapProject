@@ -556,6 +556,7 @@
 >
 >>### 길찾기
 >>해당 프로젝트에서의 길찾기는 **반드시 최적의 경로일 필요성**을 느끼지 못함, 3D지만 캐릭터의 이동범위는 **2D타일맵**으로 한정   
+>><br>
 >>이와같은 이유로 길찾기 알고리즘은 A*를 채택.   
 >><br>
 >>
@@ -625,7 +626,7 @@
 > >             if (openQueue[(_checkX, _checkY)].curCost > _fromNode.curCost + moveCost) {//기존 open을 갱신할지 여부
 > >                 openQueue[(_checkX, _checkY)].parent = new Vector2Int(fromX, fromY);
 > >                 openQueue[(_checkX, _checkY)].curCost = _fromNode.curCost + moveCost;
-> > 
+> >                 openQueue[(_checkX, _checkY)].predictCost = openQueue[(_checkX, _checkY)].curCost + openQueue[(_checkX, _checkY)].huristic;
 > >             }
 > > 
 > >         }
@@ -636,6 +637,7 @@
 > >             openQueue[(_checkX, _checkY)].huristic = (Mathf.Abs(_endX - _checkX) + Mathf.Abs(_endY - _checkY)) * 10;
 > >             openQueue[(_checkX, _checkY)].parent = new Vector2Int(fromX, fromY);
 > >             openQueue[(_checkX, _checkY)].curCost = _fromNode.curCost + moveCost;
+> >             openQueue[(_checkX, _checkY)].predictCost = openQueue[(_checkX, _checkY)].curCost + openQueue[(_checkX, _checkY)].huristic;
 > >         }
 > > 
 > >     }
