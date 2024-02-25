@@ -115,15 +115,17 @@ public static class AStar
                     hValue = node.huristic;
                     nextNode = node;
                 }
-                else if (node.predictCost == fValue) {
-                    if (node.huristic < hValue) {
+                else if (node.predictCost == fValue)
+                {
+                    if (node.huristic < hValue)
+                    {
                         hValue = node.huristic;
                         nextNode = node;
                     }
                 }
 
             }
-
+            
             if (nextNode.myPos.x == _endPos.x && nextNode.myPos.y == _endPos.y) {//도착여부 판단. => 반환.
 
                 Node printNode = nextNode;
@@ -234,6 +236,7 @@ public static class AStar
             openQueue[(_checkX, _checkY)].huristic = (Mathf.Abs(_endX - _checkX) + Mathf.Abs(_endY - _checkY)) * 10;
             openQueue[(_checkX, _checkY)].parent = new Vector2Int(fromX, fromY);
             openQueue[(_checkX, _checkY)].curCost = _fromNode.curCost + moveCost;
+            openQueue[(_checkX, _checkY)].predictCost = openQueue[(_checkX, _checkY)].curCost + openQueue[(_checkX, _checkY)].huristic;
         }
 
 
