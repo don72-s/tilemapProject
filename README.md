@@ -642,9 +642,8 @@
 > >```
 >>
 >>캐릭터 상호작용에서 첫 캐릭터 클릭 시 캐릭터의 좌표를 시작 좌표, 두번때 클릭시의 빈 좌표를 도착 좌표로 설정하여 길찾기 및 이동 시행   
+>>![ASTAR (1)](https://github.com/don72-s/tilemapProject/assets/66211881/7cb9f141-eecd-4efb-be2d-efce4cf6d704)
 >>
->>![astar](https://github.com/don72-s/tilemapProject/assets/66211881/82ec4808-7377-41e3-8ac1-ee61d45fd628)   
->>**최단거리가 아니더라도 상관없으므로 설계 의도대로 작동한다고 판단**
 
 
 <br><br>
@@ -764,15 +763,36 @@
 <br><br>
 
 
-
-
-
 ># 가구관리
 >
->맵 상에 가구의 설치, 회전, 삭제 등의 기능을 구현한다.   
+><h3>
+>
+> - [가구 설계도 정의](#가구_설계도_정의)
+>
 ><br>
 >
->>### 데이터 구조 정의
+>- [가구의 생성](#가구의_생성)
+>
+><br>
+>
+>- [가구 등록](#가구_등록)
+>
+><br>
+>
+>- [가구 제거](#가구_제거)
+>
+></h3>
+>
+><h1></h1>
+<br><br>
+
+
+>## 가구_설계도_정의
+>
+>가구의 기반이 되는 설계도를 정의한다.  
+><br>
+>
+>>### 가구 설계도 정의
 >>
 >>class와 비슷한 개념으로 **FurnitureBlueprint**클래스를 정의하여 사용한다. 또한 추가 및 관리의 용이성을 위하여 **ScriptableObject**를 상속시킨다.   
 >><br>
@@ -786,114 +806,147 @@
 >>위에 정의한 설계도를 모아서 관리하는 딕셔너리 역할을 하는 **FurnitureBlueprintDic**클래스를 정의한다. 이 또한 **ScriptableObject**를 상속하여 관리를 용이하게 한다.   
 >>![furdic](https://github.com/don72-s/tilemapProject/assets/66211881/afb9189b-578e-43ac-9b78-60d8749b597c)
 >
+<br><br>
+
+
+>## 가구의_생성
+>
+>class의 실체화된 instance의 역할을 할 **FurnitureInfo**클래스를 정의하고 가구의 이름에 따라 객체화 시켜 반환하는 간단한 **FurnitureFactory**를 정의한다.   
+><br><br>**가구의 객체 클래스**
+>```cpp
+ >
+ >internal class FurnitureInfo {
+ > 
+ >     ...생략...
+ > 
+ >     //가구의 위치변경과 회전 메소드
+ >     public void RotateFurniture() { ... }
+ >     public void SetPosition(Vector3 _pos) { ... }
+ > 
+ >     //가구의 출력 상태를 유효/유효하지 않음 상태로 변경
+ >     public void SetValid() { ... }
+ >     public void SetInvalid() { ... }
+ > 
+ >     //가구 자체 상태를 비활성화
+ >     public void SetInvisible() { ... }
+ > 
+ >     ...생략...
+ > }
+>```
+><br><br>**가구 팩토리**
+>
+>```cpp
+ > internal static class FurnitureFactory {
+ > 
+ >     private static Dictionary<string, FurnitureBluePrint> furnitureDictionay = null;
+ > 
+ >     ...생략...
+ > 
+ >     //전달된 이름을 가진 가구 종류의 FurnitureInfo타입 객체를 생성하여 반환
+ >     internal static FurnitureInfo MakeFurniture(string _type, string _furName)
+ >     {
+ >     
+ >         ...생략...
+ >         
+ >         return new FurnitureInfo(furnitureDictionay[_type], _furName);
+ >     }
+ > 
+ > }
+>```
+>
+<br><br>
+
+
+>## 가구_등록
+>새로운 가구를 맵에 등록하는 기능을 구현한다.
+><br><br>
+>>### 모드의 정의
+>>터치입력의 혼선과 맵의 갱신을 위한 캐릭터 비활성화 등을 위해 edit모드라는 상태를 정의하여 이용한다.
+>>
+>>```cpp
+ > > public partial class MapManager : MonoBehaviour
+ > > {
+ > >
+ > >     public enum MapState { VIEW_MODE, EDIT_MODE};
+ > > 
+ > >     //현재 모드 상태 저장.
+ > >     private MapState mapState;
+ > > 
+ > >
+ > >     ...생략...
+>>
+ > >     //모드변화시 호출될 메소드
+ > >     public void ChangeMapViewMode(MapState _mapViewMode) {
+ > > 
+ > >         mapState = _mapViewMode;
+ > > 
+ > >     }
+ > >     
+ > > }
+>>```
+>><br>
+>>
+>>![toeditmode](https://github.com/don72-s/tilemapProject/assets/66211881/52256628-140a-4ec6-b0bc-f4187c69f806)
+>>
 ><br><br>
 >
->>### 가구의 생성
+>
+>
+>>### 맵 데이터에 등록
 >>
->>class의 실체화된 instance의 역할을 할 **FurnitureInfo**클래스를 정의하고 가구의 이름에 따라 객체화 시켜 반환하는 간단한 **FurnitureFactory**를 정의한다.   
->><br><br>**가구의 객체 클래스**
->>```cpp
-> >
-> >internal class FurnitureInfo {
-> > 
-> >     ...생략...
-> > 
-> >     //가구의 위치변경과 회전 메소드
-> >     public void RotateFurniture() { ... }
-> >     public void SetPosition(Vector3 _pos) { ... }
-> > 
-> >     //가구의 출력 상태를 유효/유효하지 않음 상태로 변경
-> >     public void SetValid() { ... }
-> >     public void SetInvalid() { ... }
-> > 
-> >     //가구 자체 상태를 비활성화
-> >     public void SetInvisible() { ... }
-> > 
-> >     ...생략...
-> > }
->>```
->><br><br>**가구 팩토리**
+>>등록 대상이 되는 **FurnitureInfo**객체와 해당 가구의 **좌상단, 우하단**좌표를 이용하여 현재 맵에 가구 정보를 등록한다.
 >>
 >>```cpp
-> > internal static class FurnitureFactory {
-> > 
-> >     private static Dictionary<string, FurnitureBluePrint> furnitureDictionay = null;
-> > 
-> >     ...생략...
-> > 
-> >     //전달된 이름을 가진 가구 종류의 FurnitureInfo타입 객체를 생성하여 반환
-> >     internal static FurnitureInfo MakeFurniture(string _type, string _furName)
-> >     {
-> >     
-> >         ...생략...
-> >         
-> >         return new FurnitureInfo(furnitureDictionay[_type], _furName);
-> >     }
-> > 
-> > }
+ > >     private bool RegistFurniture(Vector2 _curPos, Vector2 _leftTopVec, Vector2 _rightDownVec) {
+ > > 
+ > >         //공간 유효성 확인.
+ > >         if (!ValidCheck(_curPos, _leftTopVec, _rightDownVec)) {
+ > >             Debug.Log("가구 등록에 적합하지 않은 공간. [ 가구 등록 실패 ]");
+ > >             return false;
+ > >         }
+ > > 
+ > >         ...생략...
+ > > 
+ > >         //중심 타일에 FurnitureInfo객체와 사용중인 상태로 상태를 전환 할 타일들의 리스트를 전달
+ > >         flatList[y][x].RegistFurnitureObject(curForcusedFurniture, list);
+ > > 
+ > >         return true;
+ > > 
+ > >     }
 >>```
->>
-><br><br>
+<br><br>
+
+>### 가구_제거
 >
->>### 가구의 등록
->>새로운 가구를 맵에 등록하는 기능을 구현한다.
->><br><br>
->>>### 모드의 정의
->>>터치입력의 혼선과 맵의 갱신을 위한 캐릭터 비활성화 등을 위해 edit모드라는 상태를 정의하여 이용한다.
->>>
->>>```cpp
-> > > public partial class MapManager : MonoBehaviour
-> > > {
-> > >
-> > >     public enum MapState { VIEW_MODE, EDIT_MODE};
-> > > 
-> > >     //현재 모드 상태 저장.
-> > >     private MapState mapState;
-> > > 
-> > >
-> > >     ...생략...
->>>
-> > >     //모드변화시 호출될 메소드
-> > >     public void ChangeMapViewMode(MapState _mapViewMode) {
-> > > 
-> > >         mapState = _mapViewMode;
-> > > 
-> > >     }
-> > >     
-> > > }
->><br><br>
->>
->>
->>
->>>### 맵 데이터에 등록
->>>
->>>등록 대상이 되는 **FurnitureInfo**객체와 해당 가구의 **좌상단, 우하단**좌표를 이용하여 현재 맵에 가구 정보를 등록한다.
->>>
->>>```cpp
-> > >     private bool RegistFurniture(Vector2 _curPos, Vector2 _leftTopVec, Vector2 _rightDownVec) {
-> > > 
-> > >         //공간 유효성 확인.
-> > >         if (!ValidCheck(_curPos, _leftTopVec, _rightDownVec)) {
-> > >             Debug.Log("가구 등록에 적합하지 않은 공간. [ 가구 등록 실패 ]");
-> > >             return false;
-> > >         }
-> > > 
-> > >         ...생략...
-> > > 
-> > >         //중심 타일에 FurnitureInfo객체와 사용중인 상태로 상태를 전환 할 타일들의 리스트를 전달
-> > >         flatList[y][x].RegistFurnitureObject(curForcusedFurniture, list);
-> > > 
-> > >         return true;
-> > > 
-> > >     }
->>>```
->><br><br>
->>
->>
->>
->>
+>제거 대상이 되는 **FurnitureInfo**객체를 **curForcusedFurniture**변수에 지정한 후 이를 통해 제거를 진행한다.   
+><br>
+>```cpp
 >
+>         if (curForcusedFurniture != null)
+>         {
+>             //Instantiate된 객체들을 제거하기 위해 구현된 메소드를 호출.
+>             curForcusedFurniture.DestroyFurnitureInfo();
 >
+>             //gc가 수거할 수 있도록 참조를 제거
+>             curForcusedFurniture = null;
+>         }
+>
+>```
+><br>
+>
+>```cpp
+>     public void DestroyFurnitureInfo() {
+>         Object.Destroy(furniture);
+>         Object.Destroy(furnitureRed);
+>         Object.Destroy(furnitureParent);
+>     }
+>```
+>
+<br><br>
+>### 가구관련 동작 예시
+>
+>![setupfur](https://github.com/don72-s/tilemapProject/assets/66211881/a1e4ef75-ede0-4b8d-8aae-12d07f595b92)
+
 <br>
 <br>
 <br>
