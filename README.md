@@ -267,7 +267,9 @@
             SetWallsVisible(widthWall_1, widthWall_2, heightWall_1, heightWall_2);
             SetCornerVisible(widthWall_1 && heightWall_1, widthWall_1 && heightWall_2, widthWall_2 && heightWall_1, widthWall_2 && heightWall_2);
         }
-    
+
+```
+
   <br> 
  
   ### 동작 예시
@@ -510,34 +512,55 @@
  
   
   ### 유효성 판단과 재배치
-   <br> 
-  캐릭터의 드래그 또는 배치 시 유효한 좌표인지 확인하는 작업을 거친다.   
-   <br>  <br>  <br> 
   
-    ### 드래그 범위의 보정
-    init시에 가져왔던 정보를 바탕으로 캐릭터 드래그의 최대/최소의 범위를 보정한다.
-    ```cpp
-        
+   <br> 
+   
+  캐릭터의 드래그 또는 배치 시 유효한 좌표인지 확인하는 작업을 거친다.   
+  
+   <br> 
+   <br>  
+   <br> 
+
+
+
+
+### 드래그 범위의 보정
+
+init시에 가져왔던 정보를 바탕으로 캐릭터 드래그의 최대/최소의 범위를 보정한다.
+    
+```cpp
+    
         new Vector3(Mathf.Clamp(tmpPos.x, -widthOffsetCount * unitMultiplizerX + rangeWidthOffset, (width - widthOffsetCount - 1) * unitMultiplizerX + rangeWidthOffset),
            tmpPos.y,
            Mathf.Clamp(tmpPos.z, -((height - heightOffsetCount - 1) * unitMultiplizerZ + rangeHeightOffset), -(-heightOffsetCount * unitMultiplizerZ + rangeHeightOffset))
            );
+
+```
     
-    ```
-    <br> 
+<br>
+
+![clamp](https://github.com/don72-s/tilemapProject/assets/66211881/58539845-8784-42fd-ba29-a862d6d448f6)  
+
    
-    ![clamp](https://github.com/don72-s/tilemapProject/assets/66211881/58539845-8784-42fd-ba29-a862d6d448f6)   
+    
    **맵의 최대 범위를 벗어나지 않음을 확인**
+
+<br><br>
   
-    <br>  <br> 
-  
-    ### 좌표의 유효성 확인 및 재배치
-    **MapData**클래스에서 구현한 **GetTilemapInfo** 메소드를 이용해 유효성을 판단한다.   
-     <br> 
-    **GetTilemapInfo**메소드는 int형 2차원 리스트를 반환하며 유효할 경우 0, 유효하지 않을 경우 -1의 값을 가지는 리스트다.   
-     <br> 
-    이후 부적절한 배치 위치를 가진다면, **initCharacter** 메소드를 이용해 임의의 유효한 좌표로 재배치한다.
-     ```cpp
+
+### 좌표의 유효성 확인 및 재배치
+
+**MapData**클래스에서 구현한 **GetTilemapInfo** 메소드를 이용해 유효성을 판단한다.   
+
+<br>
+     
+**GetTilemapInfo**메소드는 int형 2차원 리스트를 반환하며 유효할 경우 0, 유효하지 않을 경우 -1의 값을 가지는 리스트다.   
+
+<br>
+     
+이후 부적절한 배치 위치를 가진다면, **initCharacter** 메소드를 이용해 임의의 유효한 좌표로 재배치한다.
+    
+
        //판단할 좌표를 tile좌표로 변환
        Vector2Int pos = mapScript.Pos_To_TileXY(new Vector3(transform.position.x, heightOffset, transform.position.z));
     
@@ -547,8 +570,9 @@
           //부적절한 좌표인 경우 랜덤으로 재배치
            initCharacter();
         }
-     ```
-    <br> 
+
+     
+<br>
    
    ![repos](https://github.com/don72-s/tilemapProject/assets/66211881/1941ae8e-c456-4930-bced-9047ffe7cf89)   
    **유효하지 않을 경우 랜덤으로 재배치됨을 확인**   
