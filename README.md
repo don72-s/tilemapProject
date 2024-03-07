@@ -675,6 +675,7 @@ init시에 가져왔던 정보를 바탕으로 캐릭터 드래그의 최대/최
 
  <br>  <br> 
 
+<<<<<<< HEAD
  
   ## 행동_블록_정의
  캐릭터의 행동을 세분화, 일반화 하여 단위행동들을 조합하여 여러 행동들을 수행할 수 있도록 설계   
@@ -785,6 +786,180 @@ init시에 가져왔던 정보를 바탕으로 캐릭터 드래그의 최대/최
     }
   
   ```
+=======
+>## 배치와_길찾기
+>
+>캐릭터를 드래그하는 등의 이동에 필요한 재배치 기능과 캐릭터의 경로탐색 기능을 구현한다.
+>
+><br>
+>
+> >### 배치
+> >캐릭터의 배치는 해당 타일이 유효한지, 맵의 바깥인지 두가지의 예외상황을 제외하면 문제가 발생하지 않는다.
+> >
+> >연산을 위해 캐릭터가 활성화 될 때 가져온 맵의 정보와 MapData에 구현한 좌표변환 메소드를 이용하여 유효성을 판단한다.
+> >```cpp
+> >//initCharacter메소드에 존재하는 맵 정보 초기화 영역
+> >public void initCharacter(){
+> >
+> >    width = mapScript.GetWidth();
+> >    height = mapScript.GetHeight();
+> >    widthOffsetCount = mapScript.GetOriginalWidth() / 2;
+> >    heightOffsetCount = mapScript.GetOriginalHeight() / 2;
+> >    unitMultiplizerX = mapScript.GetUnitWidth();
+> >    unitMultiplizerZ = mapScript.GetUnitHeight();
+> >    rangeWidthOffset = mapScript.GetOriginalWidth() % 2 == 0 ? mapScript.GetUnitWidth() / 2 : 0;
+> >    rangeHeightOffset = mapScript.GetOriginalHeight() % 2 == 0 ? mapScript.GetUnitHeight() / 2 : 0;
+> > 
+> >}
+> >
+> >```
+> >```cpp
+> >//MapData클래스에 있는 좌표변환 메소드, 3차원 좌표를 타일좌표로 또는 그 반대로 변환해 반환한다.
+> >public Vector2Int Pos_To_TileXY(Vector3 v){ ... }
+> >public Vector3 TileXY_To_Pos(Vector2Int _pos){ ... }
+> >
+> >```
+> >
+><br><br>
+>
+>>
+>>### 유효성 판단과 재배치
+>><br>
+>>캐릭터의 드래그 또는 배치 시 유효한 좌표인지 확인하는 작업을 거친다.   
+>><br><br><br>
+>>
+> >>### 드래그 범위의 보정
+> >>init시에 가져왔던 정보를 바탕으로 캐릭터 드래그의 최대/최소의 범위를 보정한다.
+> >>```cpp
+> > >   
+> > >   new Vector3(Mathf.Clamp(tmpPos.x, -widthOffsetCount * unitMultiplizerX + rangeWidthOffset, (width - widthOffsetCount - 1) * unitMultiplizerX + rangeWidthOffset),
+> > >      tmpPos.y,
+> > >      Mathf.Clamp(tmpPos.z, -((height - heightOffsetCount - 1) * unitMultiplizerZ + rangeHeightOffset), -(-heightOffsetCount * unitMultiplizerZ + rangeHeightOffset))
+> > >      );
+> >>
+> >>```
+>>><br>
+>>>
+> >>![clamp](https://github.com/don72-s/tilemapProject/assets/66211881/58539845-8784-42fd-ba29-a862d6d448f6)   
+>>>**맵의 최대 범위를 벗어나지 않음을 확인**
+>>
+> ><br><br>
+>>
+> >>### 좌표의 유효성 확인 및 재배치
+> >>**MapData**클래스에서 구현한 **GetTilemapInfo** 메소드를 이용해 유효성을 판단한다.   
+> >><br>
+> >>**GetTilemapInfo**메소드는 int형 2차원 리스트를 반환하며 유효할 경우 0, 유효하지 않을 경우 -1의 값을 가지는 리스트다.   
+> >><br>
+> >>이후 부적절한 배치 위치를 가진다면, **initCharacter** 메소드를 이용해 임의의 유효한 좌표로 재배치한다.
+> > >```cpp
+> >>   //판단할 좌표를 tile좌표로 변환
+> >>   Vector2Int pos = mapScript.Pos_To_TileXY(new Vector3(transform.position.x, heightOffset, transform.position.z));
+> >>
+> >>   //배치하기에 유효한 좌표인지 체크
+> >>   if (mapScript.GetTilemapInfo()[pos.y][pos.x] == -1)
+> > >   {
+> >>      //부적절한 좌표인 경우 랜덤으로 재배치
+> > >      initCharacter();
+> > >   }
+> >> ```
+>>><br>
+>>>
+>>>![repos](https://github.com/don72-s/tilemapProject/assets/66211881/1941ae8e-c456-4930-bced-9047ffe7cf89)   
+>>>**유효하지 않을 경우 랜덤으로 재배치됨을 확인**   
+>
+><br>
+>
+>>### 길찾기
+>>해당 프로젝트에서의 길찾기는 **반드시 최적의 경로일 필요성**을 느끼지 못함, 3D지만 캐릭터의 이동범위는 **2D타일맵**으로 한정   
+>>이와같은 이유로 길찾기 알고리즘은 A*를 채택.   
+>><br>
+>>
+>>A*의 역할은 (정보 입력) -> (연산) -> (결과 경로 반환) 의 순으로 이루어지므로 **static class**로 구성해도 중분하다고 생각하여 **static class**로 구성   
+>><br>
+>>**heuristic**은 단순하게 출발지~목적지 사이의 (가로길이 + 세로길이) 로 지정   
+>>
+> >```cpp
+> > 
+> > //맵의 유효성 정보를 가진 2차원 리스트를 받아와 출발지부터 도착지까지의 경로를 찾는 메소드
+> > public static List<Vector2Int> FindPath(List<List<int>> pathList, Vector2Int _startPos, Vector2Int _endPos) {
+> > 
+> > ...생략...
+> > 
+> >         while (openQueue.Count > 0) {
+> > 
+> >             ...생략...
+> > 
+> >             //목적지 도착 여부
+> >             if (nextNode.myPos.x == _endPos.x && nextNode.myPos.y == _endPos.y) {
+> > 
+> >                 Node printNode = nextNode;
+> >                 List<Vector2Int> retL = new List<Vector2Int>();
+> > 
+> >                 while (!(printNode.myPos.x == printNode.parent.x && printNode.myPos.y == printNode.parent.y)) {
+> > 
+> >                     retL.Add(new Vector2Int(printNode.myPos.x, printNode.myPos.y));
+> >                     printNode = NodeL[printNode.parent.y][printNode.parent.x];
+> >                 }
+> > 
+> >                 retL.Add(new Vector2Int(printNode.myPos.x, printNode.myPos.y));
+> > 
+> >                 //도착지로부터 출발지까지의 타일 좌표 경로를 리스트로 반환.
+> >                 return retL;
+> >             }
+> > 
+> >             
+> >             //주위 노드들을 순회하며 탐색.
+> >             //대각선 우선 탐색.
+> >             checkPath(nextNode, curX + 1, curY - 1, _endPos.x, _endPos.y, width, height, true);
+> >             checkPath(nextNode, curX + 1, curY + 1, _endPos.x, _endPos.y, width, height, true);
+> >             checkPath(nextNode, curX - 1, curY + 1, _endPos.x, _endPos.y, width, height, true);
+> >             checkPath(nextNode, curX - 1, curY - 1, _endPos.x, _endPos.y, width, height, true);
+> > 
+> >             //전후좌우 탐색
+> >             checkPath(nextNode, curX + 1, curY, _endPos.x, _endPos.y, width, height);
+> >             checkPath(nextNode, curX, curY + 1, _endPos.x, _endPos.y, width, height);
+> >             checkPath(nextNode, curX - 1, curY, _endPos.x, _endPos.y, width, height);
+> >             checkPath(nextNode, curX, curY - 1, _endPos.x, _endPos.y, width, height);
+> > 
+> >         }
+> > 
+> >         //목적지 도달 불가.
+> > 
+> >         return null;
+> >  
+> > }
+> > 
+> > 
+> > //_fromNode로부터 _checkPos까지의 openNode설정의 역할을 하는 메소드
+> > private static void checkPath(Node _fromNode, int _checkX, int _checkY,int _endX, int _endY, int _mapWidth, int _mapHeight, bool _isCross = false) {
+> > 
+> >         ...생략...
+> >         
+> >         if (openQueue.ContainsKey((_checkX, _checkY)))//openL의 재방문인 경우
+> >         {
+> >             if (openQueue[(_checkX, _checkY)].curCost > _fromNode.curCost + moveCost) {//기존 open을 갱신할지 여부
+> >                 openQueue[(_checkX, _checkY)].parent = new Vector2Int(fromX, fromY);
+> >                 openQueue[(_checkX, _checkY)].curCost = _fromNode.curCost + moveCost;
+> > 
+> >             }
+> > 
+> >         }
+> >         else {//첫 방문인 경우
+> > 
+> >             openQueue.Add((_checkX, _checkY), NodeL[_checkY][_checkX]);
+> > 
+> >             openQueue[(_checkX, _checkY)].huristic = (Mathf.Abs(_endX - _checkX) + Mathf.Abs(_endY - _checkY)) * 10;
+> >             openQueue[(_checkX, _checkY)].parent = new Vector2Int(fromX, fromY);
+> >             openQueue[(_checkX, _checkY)].curCost = _fromNode.curCost + moveCost;
+> >         }
+> > 
+> >     }
+> >```
+>>
+>>캐릭터 상호작용에서 첫 캐릭터 클릭 시 캐릭터의 좌표를 시작 좌표, 두번때 클릭시의 빈 좌표를 도착 좌표로 설정하여 길찾기 및 이동 시행   
+>>![ASTAR (1)](https://github.com/don72-s/tilemapProject/assets/66211881/7cb9f141-eecd-4efb-be2d-efce4cf6d704)
+>>
+>>>>>>> parent of f3a0eaf (Update README.md)
 
 
  <br>  <br> 
