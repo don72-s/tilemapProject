@@ -7,8 +7,6 @@ using UnityEngine.EventSystems;
 public class HoleScript : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Observer
 {
 
-    public GameObject mapManager;
-
     private float extendRatio = 0.6f;
 
     public GameObject maskPlane;
@@ -43,7 +41,7 @@ public class HoleScript : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obse
     void Start()
     {
 
-        mapManagerScript = mapManager.GetComponent<MapManager>();
+        mapManagerScript = MapManager.GetInstance();
         scrollbar.onValueChanged.AddListener(ChangeRotWithScroll);
 
         float width = 4;
