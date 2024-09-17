@@ -109,9 +109,7 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     public Text t3;
     public Text t4;
 
-    //public GameObject mainCamera;
-
-    public GameObject mapManager;
+    private GameObject mapManager;
     private MapManager mapScript;
 
     private IRayCaster iRayCaster;
@@ -129,7 +127,7 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
         gameObject.SetActive(false);
 
         iRayCaster = IRayCasterFactory.GetRayCaster();
-        mapScript = mapManager.GetComponent<MapManager>();
+        mapScript = MapManager.GetInstance();
 
         mapScript.AddExtendObserver(this);
         mapScript.AddMapCreateDestroyObserver(this);

@@ -3,8 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 
-public interface ExtendObserver
-{
+public interface ExtendObserver {
 
     /// <summary>
     /// 바닥의 크기가 변화했을 때 호출되는 함수
@@ -144,14 +143,11 @@ class MapData {
         cornerList = new List<GameObject>();
 
         //바닥 생성
-        if (flatList.Count == 0)
-        {
-            for (int i = 0; i < height; i++)
-            {
+        if (flatList.Count == 0) {
+            for (int i = 0; i < height; i++) {
                 flatList.Add(new List<FlatInfo>());
 
-                for (int j = 0; j < width; j++)
-                {
+                for (int j = 0; j < width; j++) {
                     g = Object.Instantiate(_flatObject, new Vector3(baseOffsetX + countOffsetX * j, _flatObject.transform.position.y, baseOffsetZ + countOffsetZ * i), Quaternion.identity);
                     g.transform.localScale = new Vector3(tileWidth, g.transform.localScale.y, tileHeight);
                     g.transform.parent = flatParent.transform;
@@ -164,8 +160,7 @@ class MapData {
 
         //벽 생성.
         //기준점(불변점)에 가까운 요소가 0번째 요소로 등록됨. 가변성이 있는 요소가 가장 끝의 요소.
-        for (int i = 0; i < height; i++)
-        {
+        for (int i = 0; i < height; i++) {
             g = Object.Instantiate(_wallObject, new Vector3(baseOffsetX - widthWallOffset, _wallObject.transform.position.y, baseOffsetZ + countOffsetZ * i), Quaternion.Euler(0, 0, 0));
             g.transform.localScale = new Vector3(g.transform.localScale.x, g.transform.localScale.y, tileHeight);
             g.transform.parent = wallWidthParent_1.transform;
@@ -177,8 +172,7 @@ class MapData {
             widthWallList_2.Add(g);
         }
 
-        for (int i = 0; i < width; i++)
-        {
+        for (int i = 0; i < width; i++) {
 
             g = Object.Instantiate(_wallObject, new Vector3(baseOffsetX + countOffsetX * i, _wallObject.transform.position.y, baseOffsetZ + heightWallOffset), Quaternion.Euler(0, 90, 0));
             g.transform.localScale = new Vector3(g.transform.localScale.x, g.transform.localScale.y, tileWidth);
@@ -210,8 +204,7 @@ class MapData {
     }
 
 
-    public void VisibleSetting(Vector3 _camera)
-    {
+    public void VisibleSetting(Vector3 _camera) {
 
         bool widthWall_1 = Vector3.Dot(_camera, wallWidthParent_1.transform.forward) > 0.0001f ? false : true;
         bool heightWall_1 = Vector3.Dot(_camera, wallHeightParent_1.transform.forward) > 0.0001f ? false : true;
@@ -225,7 +218,7 @@ class MapData {
     #region 게터
 
     public int GetWidth() {
-        return width;   
+        return width;
     }
 
     public int GetHeight() {
@@ -247,16 +240,13 @@ class MapData {
     public List<GameObject> GetWidthWallList_1() {
         return widthWallList_1;
     }
-    public List<GameObject> GetWidthWallList_2()
-    {
+    public List<GameObject> GetWidthWallList_2() {
         return widthWallList_2;
     }
-    public List<GameObject> GetHeightWallList_1()
-    {
+    public List<GameObject> GetHeightWallList_1() {
         return heightWallList_1;
     }
-    public List<GameObject> GetHeightWallList_2()
-    {
+    public List<GameObject> GetHeightWallList_2() {
         return heightWallList_2;
     }
     public List<GameObject> GetCornerList() {
@@ -284,31 +274,25 @@ class MapData {
 
     }
 
-    public void SetWallWidth_2_Visible(bool _visible)
-    {
+    public void SetWallWidth_2_Visible(bool _visible) {
 
-        foreach (var _o in widthWallList_2)
-        {
+        foreach (var _o in widthWallList_2) {
             _o.SetActive(_visible);
         }
 
     }
 
-    public void SetWallHeight_1_Visible(bool _visible)
-    {
+    public void SetWallHeight_1_Visible(bool _visible) {
 
-        foreach (var _o in heightWallList_1)
-        {
+        foreach (var _o in heightWallList_1) {
             _o.SetActive(_visible);
         }
 
     }
 
-    public void SetWallHeight_2_Visible(bool _visible)
-    {
+    public void SetWallHeight_2_Visible(bool _visible) {
 
-        foreach (var _o in heightWallList_2)
-        {
+        foreach (var _o in heightWallList_2) {
             _o.SetActive(_visible);
         }
 
@@ -325,21 +309,15 @@ class MapData {
 
     public void SetFlatVisible(bool _visible) {
 
-        if (_visible)
-        {
-            foreach (List<FlatInfo> fl in flatList)
-            {
-                foreach (FlatInfo o in fl)
-                {
+        if (_visible) {
+            foreach (List<FlatInfo> fl in flatList) {
+                foreach (FlatInfo o in fl) {
                     o.VisibleFlatInfo();
                 }
             }
-        }
-        else {
-            foreach (List<FlatInfo> fl in flatList)
-            {
-                foreach (FlatInfo o in fl)
-                {
+        } else {
+            foreach (List<FlatInfo> fl in flatList) {
+                foreach (FlatInfo o in fl) {
                     o.InvisibleFlatInfo();
                 }
             }
@@ -355,8 +333,7 @@ class MapData {
     public void ExtendWidth() {
 
         //우선 최대는 maxvalue로 지정.
-        if (width >= int.MaxValue)
-        {
+        if (width >= int.MaxValue) {
             Debug.Log("너비 최대 크기 도달.");
             return;
         }
@@ -365,8 +342,7 @@ class MapData {
 
         GameObject origin = flatList[0][0].GetFlatObj();
 
-        for (int i = 0; i < flatList.Count; i++)
-        {
+        for (int i = 0; i < flatList.Count; i++) {
             GameObject g = Object.Instantiate(origin, new Vector3(baseOffsetX + countOffsetX * (width - 1), origin.transform.position.y, flatList[i][0].GetFlatObj().transform.position.z), Quaternion.identity);
             g.transform.localScale = new Vector3(tileWidth, g.transform.localScale.y, tileHeight);
             g.transform.parent = flatParent.transform;
@@ -392,14 +368,12 @@ class MapData {
 
     public bool ReduceWidth() {
 
-        if (width <= minWidth)
-        {
+        if (width <= minWidth) {
             Debug.Log("너비 최소 크기 도달");
             return false;
         }
 
-        for (int i = 0; i < flatList.Count; i++)
-        {
+        for (int i = 0; i < flatList.Count; i++) {
             if (!flatList[i][width - 1].GetIsEmpty()) {
                 Debug.Log("지울 영역에 가구 존재.");
                 return false;
@@ -410,8 +384,7 @@ class MapData {
         width--;
 
 
-        for (int i = 0; i < flatList.Count; i++)
-        {
+        for (int i = 0; i < flatList.Count; i++) {
             Object.Destroy(flatList[i][width].GetFlatObj());
             flatList[i].RemoveAt(width);
         }
@@ -433,8 +406,7 @@ class MapData {
     public void ExtendHeight() {
 
         //최대는 우선 임의 지정.
-        if (height >= int.MaxValue)
-        {
+        if (height >= int.MaxValue) {
             Debug.Log("높이 최대 크기 도달.");
             return;
         }
@@ -447,8 +419,7 @@ class MapData {
 
         GameObject origin = flatList[0][0].GetFlatObj();
 
-        for (int i = 0; i < width; i++)
-        {
+        for (int i = 0; i < width; i++) {
             GameObject g = Object.Instantiate(origin, new Vector3(baseOffsetX + countOffsetX * i, origin.transform.position.y, baseOffsetZ + countOffsetZ * (height - 1)), Quaternion.identity);
             g.transform.localScale = new Vector3(tileWidth, g.transform.localScale.y, tileHeight);
             g.transform.parent = flatParent.transform;
@@ -475,14 +446,12 @@ class MapData {
 
     public bool ReduceHeight() {
 
-        if (height <= minHeight)
-        {
+        if (height <= minHeight) {
             Debug.Log("높이 최소 크기 도달");
             return false;
         }
 
-        for (int i = 0; i < flatList[height - 1].Count; i++)
-        {
+        for (int i = 0; i < flatList[height - 1].Count; i++) {
             if (!flatList[height - 1][i].GetIsEmpty()) {
                 Debug.Log("지울 영역에 가구 존재.");
                 return false;
@@ -491,8 +460,7 @@ class MapData {
 
         height--;
 
-        for (int i = 0; i < flatList[height].Count; i++)
-        {
+        for (int i = 0; i < flatList[height].Count; i++) {
             Object.Destroy(flatList[height][i].GetFlatObj());
         }
 
@@ -538,7 +506,7 @@ class MapData {
     /// <returns></returns>
     private List<Vector3> GetEmptyPosList() {
 
-        List<Vector3> retList = new List<Vector3> ();
+        List<Vector3> retList = new List<Vector3>();
 
         foreach (List<FlatInfo> _fl in flatList) {
 
@@ -549,7 +517,7 @@ class MapData {
                     retList.Add(_f.GetFlatObj().transform.position);
 
                 }
-            
+
             }
 
         }
@@ -563,8 +531,8 @@ class MapData {
     /// 현재 맵의 중심 좌표를 반환.
     /// </summary>
     /// <returns></returns>
-    public Vector3 GetCenterPos() { 
-        
+    public Vector3 GetCenterPos() {
+
         return new Vector3(
             (flatList[0][0].GetFlatObj().transform.position.x + flatList[flatList.Count - 1][flatList[flatList.Count - 1].Count - 1].GetFlatObj().transform.position.x) / 2,
             0,
@@ -594,10 +562,8 @@ class MapData {
 
     public void RemoveMap() {
 
-        for (int i = flatList.Count - 1; i >= 0; i--)
-        {
-            for (int j = flatList[i].Count - 1; j >= 0; j--)
-            {
+        for (int i = flatList.Count - 1; i >= 0; i--) {
+            for (int j = flatList[i].Count - 1; j >= 0; j--) {
                 flatList[i][j].DestroyFlatInfo();
                 flatList[i].RemoveAt(j);
             }
@@ -620,10 +586,8 @@ class MapData {
 
     }
 
-    private void ClearGameObjectList(List<GameObject> _l)
-    {
-        for (int i = _l.Count - 1; i >= 0; i--)
-        {
+    private void ClearGameObjectList(List<GameObject> _l) {
+        for (int i = _l.Count - 1; i >= 0; i--) {
             Object.Destroy(_l[i]);
             _l.RemoveAt(i);
         }
@@ -633,18 +597,20 @@ class MapData {
 }
 
 
-public partial class MapManager : MonoBehaviour
-{
+public partial class MapManager : MonoBehaviour {
 
-    public enum MapState { VIEW_MODE, EDIT_MODE};
+    public enum MapState { VIEW_MODE, EDIT_MODE };
 
     //현재 모드 상태 저장.
     private MapState mapState;
 
-
-    public GameObject flatObject;
-    public GameObject wallObject;
-    public GameObject cornerWallObject;
+    [Header("Prefabs")]
+    [SerializeField]
+    private GameObject flatObject;
+    [SerializeField]
+    private GameObject wallObject;
+    [SerializeField]
+    private GameObject cornerWallObject;
 
 
     //맵 크기의 확대/축소 행동에 대해 등록될 옵저버 목록.
@@ -656,7 +622,7 @@ public partial class MapManager : MonoBehaviour
     //RayCaster 인터페이스
     private IRayCaster iRayCaster;
 
-
+    [Header("Debug Ui")]
     //디버그용 입력 영역
     public InputField a;
     public InputField b;
@@ -664,6 +630,51 @@ public partial class MapManager : MonoBehaviour
     public InputField d;
 
     public Text debugModeState;
+
+
+    private static MapManager instance;
+
+    private void Awake() {
+
+        if (instance == null) {
+
+            instance = this;
+
+        } else { 
+        
+            Destroy(gameObject);
+
+        }
+
+    }
+
+
+    private void Start() {
+
+        mapState = MapState.VIEW_MODE;
+        iRayCaster = IRayCasterFactory.GetRayCaster();
+        initFurnitureDic();
+
+    }
+
+
+    public void Update() {
+
+        if (!CheckMapExist()) return;
+
+        Vector3 cameraViewVector = new Vector3(Camera.main.transform.parent.position.x, Camera.main.transform.position.y, Camera.main.transform.parent.position.z) - Camera.main.transform.position;
+
+        curMapData.VisibleSetting(cameraViewVector);
+
+        UpdateSwitcher();
+
+    }
+
+    public static MapManager GetInstance() {
+
+        return instance;
+
+    }
 
 
     #region debug
@@ -679,8 +690,7 @@ public partial class MapManager : MonoBehaviour
             return;
         }
 
-        if (GetMapViewMode() != MapState.VIEW_MODE)
-        {
+        if (GetMapViewMode() != MapState.VIEW_MODE) {
             Debug.Log("관전 상태가 아닙니다.");
             return;
         }
@@ -730,7 +740,7 @@ public partial class MapManager : MonoBehaviour
 
         // todo : => 값들의 유효성 검사 실행. 
         int inputWidth = int.Parse(a.text);//양수
-        int inputHeight = int.Parse (b.text);//양수
+        int inputHeight = int.Parse(b.text);//양수
 
         int inputTileWidth = int.Parse(c.text);//양의 짝수
         int inputTileHeight = int.Parse(d.text);//양의 짝수
@@ -755,8 +765,7 @@ public partial class MapManager : MonoBehaviour
     /// <returns>int형 2차원 배열 형식[ 맵이 없을 경우 null 반환 ]</returns>
     public List<List<int>> GetTilemapInfo() {
 
-        if (!CheckMapExist())
-        {
+        if (!CheckMapExist()) {
             Debug.Log("맵이 없습니다.");
             return null;
         }
@@ -768,7 +777,7 @@ public partial class MapManager : MonoBehaviour
             tilemapInfo.Add(new List<int>());
 
             foreach (FlatInfo flatInfo in fiL) {
-                tilemapInfo[tilemapInfo.Count - 1].Add( flatInfo.GetIsEmpty() ? 0 : -1 );
+                tilemapInfo[tilemapInfo.Count - 1].Add(flatInfo.GetIsEmpty() ? 0 : -1);
             }
         }
 
@@ -787,15 +796,12 @@ public partial class MapManager : MonoBehaviour
         float j = v.x - GetBaseOffsetX() + GetUnitWidth() / 2;
         float i = -(v.z - GetBaseOffsetZ() - GetUnitHeight() / 2);
 
-        if (j > 0 && j < GetWidth() * GetUnitWidth() && i > 0 && i < GetHeight() * GetUnitHeight())
-        {
+        if (j > 0 && j < GetWidth() * GetUnitWidth() && i > 0 && i < GetHeight() * GetUnitHeight()) {
 
             j = (int)(j / GetUnitWidth());
             i = (int)(i / GetUnitHeight());
 
-        }
-        else
-        {
+        } else {
             Debug.Log("outer flat area detected");
             return new Vector2Int(int.MinValue, int.MinValue);
         }
@@ -818,8 +824,7 @@ public partial class MapManager : MonoBehaviour
     /// 해당 타일맵의 중심좌표를 vec3 형태로 반환.
     /// </summary>
     /// <returns>vec3으로 반환. 맵 밖일 경우 [ vector3.negativeInfinity ] 반환</returns>
-    public Vector3 TileXY_To_Pos(int _posX, int _posY)
-    {
+    public Vector3 TileXY_To_Pos(int _posX, int _posY) {
 
         if (_posX < 0 || _posX >= GetWidth() || _posY < 0 || _posY >= GetHeight()) {
             Debug.Log("타일맵 범위를 벗어난 좌표 변환 시도.");
@@ -848,37 +853,15 @@ public partial class MapManager : MonoBehaviour
         curMapData.RemoveMap();
         curMapData = null;
 
-        foreach (Map_Create_Destroy_Observer _o in MapCDObserverL)
-        {
+        foreach (Map_Create_Destroy_Observer _o in MapCDObserverL) {
             _o.MapDestroy();
         }
 
     }
 
     public bool CheckMapExist() {
+
         return curMapData != null ? true : false;
-    }
-
-
-
-    public void Start()
-    {
-        mapState = MapState.VIEW_MODE;
-        iRayCaster = IRayCasterFactory.GetRayCaster();
-        initFurnitureDic();
-    }
-
-
-    public void Update()
-    {
-
-        if (!CheckMapExist()) return;
-
-        Vector3 cameraViewVector = new Vector3(Camera.main.transform.parent.position.x, Camera.main.transform.position.y, Camera.main.transform.parent.position.z) - Camera.main.transform.position;
-
-        curMapData.VisibleSetting(cameraViewVector);
-
-        UpdateSwitcher();
 
     }
 
@@ -902,7 +885,7 @@ public partial class MapManager : MonoBehaviour
 
             default:
                 break;
-        
+
         }
 
     }
@@ -925,8 +908,7 @@ public partial class MapManager : MonoBehaviour
 
     public int GetOriginalWidth() {
 
-        if (!CheckMapExist())
-        {
+        if (!CheckMapExist()) {
             return -1;
         }
 
@@ -934,11 +916,9 @@ public partial class MapManager : MonoBehaviour
 
     }
 
-    public int GetOriginalHeight()
-    {
+    public int GetOriginalHeight() {
 
-        if (!CheckMapExist())
-        {
+        if (!CheckMapExist()) {
             return -1;
         }
 
@@ -946,28 +926,23 @@ public partial class MapManager : MonoBehaviour
 
     }
 
-    public int GetBaseOffsetX()
-    {
-        if (!CheckMapExist())
-        {
+    public int GetBaseOffsetX() {
+        if (!CheckMapExist()) {
             return -1;
         }
 
         return curMapData.baseOffsetX;
     }
 
-    public int GetBaseOffsetZ()
-    {
-        if (!CheckMapExist())
-        {
+    public int GetBaseOffsetZ() {
+        if (!CheckMapExist()) {
             return -1;
         }
 
         return curMapData.baseOffsetZ;
     }
 
-    public int GetWidth()
-    {
+    public int GetWidth() {
 
         if (!CheckMapExist()) {
             return -1;
@@ -976,10 +951,8 @@ public partial class MapManager : MonoBehaviour
         return curMapData.width;
     }
 
-    public int GetHeight()
-    {
-        if (!CheckMapExist())
-        {
+    public int GetHeight() {
+        if (!CheckMapExist()) {
             return -1;
         }
 
@@ -988,8 +961,7 @@ public partial class MapManager : MonoBehaviour
 
     public int GetUnitWidth() {
 
-        if (!CheckMapExist())
-        {
+        if (!CheckMapExist()) {
             return -1;
         }
 
@@ -998,8 +970,7 @@ public partial class MapManager : MonoBehaviour
 
     public int GetUnitHeight() {
 
-        if (!CheckMapExist())
-        {
+        if (!CheckMapExist()) {
             return -1;
         }
 
@@ -1013,15 +984,14 @@ public partial class MapManager : MonoBehaviour
         }
 
         return curMapData.GetEmptyFlat();
-    
+
     }
 
     #endregion
 
     #region 바닥 변화 함수 영역
 
-    public void extendWidth()
-    {
+    public void extendWidth() {
 
         if (!CheckMapExist()) {
             Debug.Log("맵 객체가 존재하지 않음.");
@@ -1034,11 +1004,9 @@ public partial class MapManager : MonoBehaviour
 
     }
 
-    public void reduceWidth()
-    {
+    public void reduceWidth() {
 
-        if (!CheckMapExist())
-        {
+        if (!CheckMapExist()) {
             Debug.Log("맵 객체가 존재하지 않음.");
             return;
         }
@@ -1049,11 +1017,9 @@ public partial class MapManager : MonoBehaviour
 
     }
 
-    public void extendHeight()
-    {
+    public void extendHeight() {
 
-        if (!CheckMapExist())
-        {
+        if (!CheckMapExist()) {
             Debug.Log("맵 객체가 존재하지 않음.");
             return;
         }
@@ -1064,27 +1030,23 @@ public partial class MapManager : MonoBehaviour
 
     }
 
-    public void reduceHeight()
-    {
+    public void reduceHeight() {
 
-        if (!CheckMapExist())
-        {
+        if (!CheckMapExist()) {
             Debug.Log("맵 객체가 존재하지 않음.");
             return;
         }
 
-       
-        if(!curMapData.ReduceHeight()) return;
+
+        if (!curMapData.ReduceHeight()) return;
 
         notify();
 
     }
 
-    private void notify()
-    {
+    private void notify() {
 
-        foreach (ExtendObserver e in ExtendObserverL)
-        {
+        foreach (ExtendObserver e in ExtendObserverL) {
             e.OnExtended(curMapData.GetCenterPos(), curMapData.width, curMapData.height, curMapData.tileWidth, curMapData.tileHeight);
         }
 
@@ -1093,12 +1055,10 @@ public partial class MapManager : MonoBehaviour
     #endregion
 
 
-    public void AddExtendObserver(ExtendObserver _o)
-    {
+    public void AddExtendObserver(ExtendObserver _o) {
         ExtendObserverL.Add(_o);
     }
-    public void AddMapCreateDestroyObserver(Map_Create_Destroy_Observer _o)
-    {
+    public void AddMapCreateDestroyObserver(Map_Create_Destroy_Observer _o) {
         MapCDObserverL.Add(_o);
     }
 
