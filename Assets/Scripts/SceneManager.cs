@@ -11,7 +11,7 @@ public class SceneManager : MonoBehaviour
 
     public MapManager mapManager;
 
-    public GameObject characterInstance;
+    public Character characterInstance;
 
     private Character curFocusedCharacter = null;
 
@@ -25,13 +25,8 @@ public class SceneManager : MonoBehaviour
     private void Start()
     {
 
-        //characterList = new List<Character>();
-
-        GameObject chr = Instantiate(characterInstance);
-        chr.name = "캐릭터_1";
-
-        //todo : 캐릭터 목록 등 체계 정립 및 정리 필요.
-        characterList.Add(chr.GetComponent<Character>());
+        characterList.Add(Instantiate(characterInstance));
+        characterList.Add(Instantiate(characterInstance));
 
         ray = IRayCasterFactory.GetRayCaster();
     }
@@ -101,7 +96,7 @@ public class SceneManager : MonoBehaviour
 
         }
 
-        Camera.main.orthographicSize += Input.GetAxis("Mouse ScrollWheel");
+        Camera.main.orthographicSize -= Input.GetAxis("Mouse ScrollWheel");
 
     }
 

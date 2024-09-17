@@ -103,12 +103,6 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     private Animator animator;
     private SpriteRenderer spriteRenderer;
 
-    //디버그용 text
-    public Text t1;
-    public Text t2;
-    public Text t3;
-    public Text t4;
-
     private GameObject mapManager;
     private MapManager mapScript;
 
@@ -263,8 +257,9 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     /// <param name="_state">전환 및 진입할 상태</param>
     public void ChangeState(STATE _state)
     {
-        //디버그
-        t1.text = "state : " + _state;
+
+        //character debuger
+        //Debug.Log("state : " + _state);
 
         switch (_state)
         {
@@ -476,7 +471,8 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
         List<List<int>> maps = mapScript.GetTilemapInfo();
         if (maps == null)
         {
-            t4.text = "move action debuger : 잘못된 맵 정보";
+            //character debuger
+            //Debug.Log("move action debuger : 잘못된 맵 정보");
             return;
         }
 
@@ -501,27 +497,31 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
         if (startPos.x == int.MinValue && startPos.y == int.MinValue)
         {
-            t4.text = "move action debuger : 캐릭터가 맵 바깥에 있음.";
+            //character debuger
+            //Debug.Log("move action debuger : 캐릭터가 맵 바깥에 있음.");
             return;
         }
 
 
         if (maps[startPos.y][startPos.x] == -1)
         {
-            t4.text = "move action debuger : 캐릭터가 벽에 있음.";
+            //character debuger
+            //Debug.Log("move action debuger : 캐릭터가 벽에 있음.");
             return;
         }
 
 
         if (endx < 0 || endx >= maps[0].Count || endy < 0 || endy >= maps.Count)
         {
-            t4.text = "move action debuger : 도착지가 맵 바깥에 있음.";
+            //character debuger
+            //Debug.Log("move action debuger : 도착지가 맵 바깥에 있음.");
             return;
         }
 
         if (maps[endy][endx] == -1)
         {
-            t4.text = "move action debuger : 도착지로 벽이 지정됨.";
+            //character debuger
+            //Debug.Log("move action debuger : 도착지로 벽이 지정됨.");
             return;
         }
 
@@ -532,7 +532,8 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
         if (pathL == null)
         {
-            t4.text = "move action debuger : 목적지까지의 경로가 존재하지 않음.";
+            //character debuger
+            //Debug.Log("move action debuger : 목적지까지의 경로가 존재하지 않음.");
             return;
         }
 
@@ -606,7 +607,8 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
     public void changeAcceptable(ACCEPTABLE _acc)
     {
-        t2.text = "acceptable : " + _acc;
+        //character debuger
+        //Debug.Log("acceptable : " + _acc);
         accState = _acc;
     }
 
@@ -616,7 +618,8 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     /// <param name="_isRight">시점 기준 우방향으로 이동중인지 여부</param>
     void changeDirectionSprite(bool _isRight)
     {
-        t3.text = _isRight ? "direction : Right" : "direction : Left";
+        //character debuger
+        //Debug.Log(_isRight ? "direction : Right" : "direction : Left");
 
         if (_isRight)
         {

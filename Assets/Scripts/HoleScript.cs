@@ -105,7 +105,6 @@ public class HoleScript : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obse
         if (onDrag && Input.GetMouseButtonUp(0))
         {
             onDrag = false;
-            Debug.Log("off");
         }
 
 

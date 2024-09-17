@@ -600,7 +600,7 @@ class MapData {
 public partial class MapManager : MonoBehaviour {
 
     public enum MapState { VIEW_MODE, EDIT_MODE };
-
+    
     //현재 모드 상태 저장.
     private MapState mapState;
 
