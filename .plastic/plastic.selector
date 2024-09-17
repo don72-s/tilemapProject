@@ -1,4 +1,0 @@
-repository "practiceProject_2019@local"
-  path "/"
-    br "/main"
-    co "/main"
