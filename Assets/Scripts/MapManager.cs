@@ -131,7 +131,7 @@ class MapData {
         widthWallOffset = tileWidth / 2 + 0.15f;
         heightWallOffset = tileHeight / 2 + 0.15f;
 
-        #region 생성테스트
+        /*#region 생성테스트
 
         GameObject g;
 
@@ -194,6 +194,76 @@ class MapData {
         cornerList.Add(Object.Instantiate(_cornerObject, new Vector3(baseOffsetX - widthWallOffset, _cornerObject.transform.position.y, baseOffsetZ + countOffsetZ * (height - 1) - heightWallOffset), Quaternion.Euler(0, 0, 0)));
         cornerList.Add(Object.Instantiate(_cornerObject, new Vector3(baseOffsetX + countOffsetX * (width - 1) + widthWallOffset, _cornerObject.transform.position.y, baseOffsetZ + heightWallOffset), Quaternion.Euler(0, 0, 0)));
         cornerList.Add(Object.Instantiate(_cornerObject, new Vector3(baseOffsetX + countOffsetX * (width - 1) + widthWallOffset, _cornerObject.transform.position.y, baseOffsetZ + countOffsetZ * (height - 1) - heightWallOffset), Quaternion.Euler(0, 0, 0)));
+
+        for (int i = 0; i < cornerList.Count; i++) {
+            cornerList[i].transform.parent = cornerParent.transform;
+        }
+
+        #endregion*/
+
+        #region 생성테스트 2
+
+        GameObject g;
+
+        flatList = new List<List<FlatInfo>>();
+        widthWallList_1 = new List<GameObject>();
+        widthWallList_2 = new List<GameObject>();
+        heightWallList_1 = new List<GameObject>();
+        heightWallList_2 = new List<GameObject>();
+        cornerList = new List<GameObject>();
+
+        //바닥 생성
+        if (flatList.Count == 0) {
+            for (int i = 0; i < height; i++) {
+                flatList.Add(new List<FlatInfo>());
+
+                for (int j = 0; j < width; j++) {
+                    g = Object.Instantiate(_flatObject, new Vector3(countOffsetX * j, _flatObject.transform.position.y, countOffsetZ * i), Quaternion.identity);
+                    g.transform.localScale = new Vector3(tileWidth, g.transform.localScale.y, tileHeight);
+                    g.transform.parent = flatParent.transform;
+                    flatList[i].Add(new FlatInfo(g, i, j));
+                }
+
+            }
+
+        }
+
+        //벽 생성.
+        //기준점(불변점)에 가까운 요소가 0번째 요소로 등록됨. 가변성이 있는 요소가 가장 끝의 요소.
+        for (int i = 0; i < height; i++) {
+            g = Object.Instantiate(_wallObject, new Vector3(- widthWallOffset, _wallObject.transform.position.y, countOffsetZ * i), Quaternion.Euler(0, 0, 0));
+            g.transform.localScale = new Vector3(g.transform.localScale.x, g.transform.localScale.y, tileHeight);
+            g.transform.parent = wallWidthParent_1.transform;
+            widthWallList_1.Add(g);
+
+            g = Object.Instantiate(_wallObject, new Vector3(countOffsetX * (width - 1) + widthWallOffset, _wallObject.transform.position.y, countOffsetZ * i), Quaternion.Euler(0, 180, 0));
+            g.transform.localScale = new Vector3(g.transform.localScale.x, g.transform.localScale.y, tileHeight);
+            g.transform.parent = wallWidthParent_2.transform;
+            widthWallList_2.Add(g);
+        }
+
+        for (int i = 0; i < width; i++) {
+
+            g = Object.Instantiate(_wallObject, new Vector3(countOffsetX * i, _wallObject.transform.position.y, heightWallOffset), Quaternion.Euler(0, 90, 0));
+            g.transform.localScale = new Vector3(g.transform.localScale.x, g.transform.localScale.y, tileWidth);
+            g.transform.parent = wallHeightParent_1.transform;
+            heightWallList_1.Add(g);
+
+            g = Object.Instantiate(_wallObject, new Vector3(countOffsetX * i, _wallObject.transform.position.y, countOffsetZ * (height - 1) - heightWallOffset), Quaternion.Euler(0, 270, 0));
+            g.transform.localScale = new Vector3(g.transform.localScale.x, g.transform.localScale.y, tileWidth);
+            g.transform.parent = wallHeightParent_2.transform;
+            heightWallList_2.Add(g);
+
+        }
+
+
+
+        //꼭짓점 기둥 생성.
+
+        cornerList.Add(Object.Instantiate(_cornerObject, new Vector3(- widthWallOffset, _cornerObject.transform.position.y, heightWallOffset), Quaternion.Euler(0, 0, 0)));
+        cornerList.Add(Object.Instantiate(_cornerObject, new Vector3(- widthWallOffset, _cornerObject.transform.position.y, countOffsetZ * (height - 1) - heightWallOffset), Quaternion.Euler(0, 0, 0)));
+        cornerList.Add(Object.Instantiate(_cornerObject, new Vector3(countOffsetX * (width - 1) + widthWallOffset, _cornerObject.transform.position.y, heightWallOffset), Quaternion.Euler(0, 0, 0)));
+        cornerList.Add(Object.Instantiate(_cornerObject, new Vector3(countOffsetX * (width - 1) + widthWallOffset, _cornerObject.transform.position.y, countOffsetZ * (height - 1) - heightWallOffset), Quaternion.Euler(0, 0, 0)));
 
         for (int i = 0; i < cornerList.Count; i++) {
             cornerList[i].transform.parent = cornerParent.transform;
@@ -343,7 +413,7 @@ class MapData {
         GameObject origin = flatList[0][0].GetFlatObj();
 
         for (int i = 0; i < flatList.Count; i++) {
-            GameObject g = Object.Instantiate(origin, new Vector3(baseOffsetX + countOffsetX * (width - 1), origin.transform.position.y, flatList[i][0].GetFlatObj().transform.position.z), Quaternion.identity);
+            GameObject g = Object.Instantiate(origin, new Vector3(countOffsetX * (width - 1), origin.transform.position.y, flatList[i][0].GetFlatObj().transform.position.z), Quaternion.identity);
             g.transform.localScale = new Vector3(tileWidth, g.transform.localScale.y, tileHeight);
             g.transform.parent = flatParent.transform;
             flatList[i].Add(new FlatInfo(g, i, flatList[i].Count));
@@ -420,7 +490,7 @@ class MapData {
         GameObject origin = flatList[0][0].GetFlatObj();
 
         for (int i = 0; i < width; i++) {
-            GameObject g = Object.Instantiate(origin, new Vector3(baseOffsetX + countOffsetX * i, origin.transform.position.y, baseOffsetZ + countOffsetZ * (height - 1)), Quaternion.identity);
+            GameObject g = Object.Instantiate(origin, new Vector3(countOffsetX * i, origin.transform.position.y, countOffsetZ * (height - 1)), Quaternion.identity);
             g.transform.localScale = new Vector3(tileWidth, g.transform.localScale.y, tileHeight);
             g.transform.parent = flatParent.transform;
             flatList[flatList.Count - 1].Add(new FlatInfo(g, flatList.Count, i));
@@ -793,8 +863,10 @@ public partial class MapManager : MonoBehaviour {
     public Vector2Int Pos_To_TileXY(Vector3 v) {
 
 
-        float j = v.x - GetBaseOffsetX() + GetUnitWidth() / 2;
-        float i = -(v.z - GetBaseOffsetZ() - GetUnitHeight() / 2);
+        float j = v.x + GetUnitWidth() / 2;
+        float i = -(v.z - GetUnitHeight() / 2);
+
+        Debug.Log($"before : {j}, {i}");
 
         if (j > 0 && j < GetWidth() * GetUnitWidth() && i > 0 && i < GetHeight() * GetUnitHeight()) {
 
@@ -805,7 +877,6 @@ public partial class MapManager : MonoBehaviour {
             Debug.Log("outer flat area detected");
             return new Vector2Int(int.MinValue, int.MinValue);
         }
-
 
         return new Vector2Int((int)j, (int)i);
 

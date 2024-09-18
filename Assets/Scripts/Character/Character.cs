@@ -362,9 +362,9 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
         {
             Vector3 tmpPos = flatHitPoint + touchOffsetVec;
 
-            tmpPos = new Vector3(Mathf.Clamp(tmpPos.x, -widthOffsetCount * unitMultiplizerX + rangeWidthOffset, (width - widthOffsetCount - 1) * unitMultiplizerX + rangeWidthOffset),
+            tmpPos = new Vector3(Mathf.Clamp(tmpPos.x, 0, (width - 1) * unitMultiplizerX),
                                   tmpPos.y,
-                                  Mathf.Clamp(tmpPos.z, -((height - heightOffsetCount - 1) * unitMultiplizerZ + rangeHeightOffset), -(-heightOffsetCount * unitMultiplizerZ + rangeHeightOffset))
+                                  Mathf.Clamp(tmpPos.z, -((height - 1) * unitMultiplizerZ), 0)
                                 );
 
             transform.position = tmpPos;
@@ -542,10 +542,9 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
         {
 
             Vector3 endPosV3 = new Vector3(
-                (pathL[i].x - widthOffsetCount) * unitMultiplizerX + rangeWidthOffset,
+                pathL[i].x * unitMultiplizerX,
                 heightOffset,
-                -(pathL[i].y - heightOffsetCount) * unitMultiplizerZ - rangeHeightOffset);
-
+                -pathL[i].y * unitMultiplizerZ);
 
             actionQueue.Add(new MoveActionBlock(STATE.ACTING, ACCEPTABLE.DENY, this, endPosV3));
 
@@ -655,20 +654,20 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
         Vector3 curPos = transform.position;
 
-        if (curPos.x < -widthOffsetCount * unitMultiplizerX + rangeWidthOffset ||
-           curPos.x > (width - widthOffsetCount - 1) * unitMultiplizerX + rangeWidthOffset ||
-           curPos.z < -((height - heightOffsetCount - 1) * unitMultiplizerZ + rangeHeightOffset) ||
-           curPos.z > -(-heightOffsetCount * unitMultiplizerZ + rangeHeightOffset))
+        if (curPos.x < 0 ||
+           curPos.x > (width - 1) * unitMultiplizerX ||
+           curPos.z < -((height - 1) * unitMultiplizerZ) ||
+           curPos.z > 0)
         {
-
+            
             //행동중지 및 가까운 영역으로 이동
             setTimeDelayOffset(3);
             ChangeState(STATE.IDLE);
             ClearActionQueue();
 
-            curPos = new Vector3(Mathf.Clamp(curPos.x, -widthOffsetCount * unitMultiplizerX + rangeWidthOffset, (width - widthOffsetCount - 1) * unitMultiplizerX + rangeWidthOffset),
+            curPos = new Vector3(Mathf.Clamp(curPos.x, 0, (width - 1) * unitMultiplizerX),
                               curPos.y,
-                              Mathf.Clamp(curPos.z, -((height - heightOffsetCount - 1) * unitMultiplizerZ + rangeHeightOffset), -(-heightOffsetCount * unitMultiplizerZ + rangeHeightOffset))
+                              Mathf.Clamp(curPos.z, -((height - 1) * unitMultiplizerZ), 0)
                             );
             //todo : 확장과 축소가 캐릭터가 이동하는 중에 이루어질 수 있는지 확인.
             //동시에 이루어질 수 있다면 위,아래 사항 고려 필요.

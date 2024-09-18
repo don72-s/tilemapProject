@@ -1,6 +1,4 @@
-﻿
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -24,8 +22,7 @@ internal class FlatInfo {
     /// <param name="_g">바닥의 실체 오브젝트</param>
     /// <param name="_idxX">리스트상의 I 인덱스</param>
     /// <param name="_idxY">리스트상의 J 인덱스</param>
-    public FlatInfo(GameObject _g, int _idxI, int _idxJ)
-    {
+    public FlatInfo(GameObject _g, int _idxI, int _idxJ) {
 
         flatObject = _g;
         isEmpty = true;
@@ -37,7 +34,7 @@ internal class FlatInfo {
         return baseIdx;
     }
 
-    public List<Vector2> GetSubIdxes() { 
+    public List<Vector2> GetSubIdxes() {
         return subIdxes;
     }
 
@@ -45,7 +42,7 @@ internal class FlatInfo {
         return flatObject;
     }
 
-    public bool GetIsEmpty() { 
+    public bool GetIsEmpty() {
         return isEmpty;
     }
 
@@ -62,7 +59,7 @@ internal class FlatInfo {
 
         baseIdx = _baseVec;
         isEmpty = false;
-    
+
     }
 
 
@@ -81,7 +78,7 @@ internal class FlatInfo {
         ReleaseEmpty();
 
         return tmp;
-    
+
     }
 
     /// <summary>
@@ -110,7 +107,7 @@ internal class FlatInfo {
     /// 디버그1
     /// </summary>
     public void InvisibleFlatInfo() {
-        if (curFurniture != null) { 
+        if (curFurniture != null) {
             curFurniture.SetInvisible();
         }
 
@@ -121,7 +118,7 @@ internal class FlatInfo {
     /// 디버그2
     /// </summary>
     public void VisibleFlatInfo() {
-        if (curFurniture != null) { 
+        if (curFurniture != null) {
             curFurniture.SetValid();
         }
         flatObject.SetActive(true);
@@ -131,7 +128,7 @@ internal class FlatInfo {
     /// 디버그3
     /// </summary>
     public void DestroyFlatInfo() {
-        if (curFurniture != null) { 
+        if (curFurniture != null) {
             curFurniture.DestroyFurnitureInfo();
         }
         Object.Destroy(GetFlatObj());
@@ -186,7 +183,7 @@ internal class FurnitureInfo {
     /// <param name="_furniture_Red">불가능을 나타내는 가구 객체</param>
     /// <param name="_width">가구 객체의 가로 길이</param>
     /// <param name="_height">가구 객체의 세로 길이</param>
-    public void InitInfo (GameObject _furniture, GameObject _furniture_Red, int _width, int _height) {
+    public void InitInfo(GameObject _furniture, GameObject _furniture_Red, int _width, int _height) {
 
 
         furniture = _furniture;
@@ -198,7 +195,7 @@ internal class FurnitureInfo {
         rotIndexer = 0;
 
         //홀수면 안더함, 짝수면 더함(offset)
-        int left =  -(_width / 2) + (_width + 1) % 2;
+        int left = -(_width / 2) + (_width + 1) % 2;
         int top = -(_height / 2);
         int right = (_width / 2);
         int down = (_height / 2) - (_height + 1) % 2;
@@ -258,8 +255,8 @@ internal class FurnitureInfo {
     /// 가구의 위치를 변경함.
     /// </summary>
     /// <param name="_pos">변경할 중심 위치</param>
-    public void SetPosition(Vector3 _pos) { 
-    
+    public void SetPosition(Vector3 _pos) {
+
         furniture.transform.position = _pos;
         furnitureRed.transform.position = _pos;
 
@@ -282,7 +279,7 @@ internal class FurnitureInfo {
     /// <summary>
     /// 유효한 상태로 변환.
     /// </summary>
-    public void SetValid() { 
+    public void SetValid() {
         furniture.SetActive(true);
         furnitureRed.SetActive(false);
     }
@@ -308,7 +305,7 @@ internal class FurnitureInfo {
     /// 좌상단기준 차지 공간 좌표 백터 반환.
     /// </summary>
     /// <returns></returns>
-    public Vector2 GetLeftTopVector() { 
+    public Vector2 GetLeftTopVector() {
         return new Vector2(rotVecArr[rotIndexer, 0], rotVecArr[rotIndexer, 1]);
     }
 
@@ -364,8 +361,7 @@ internal static class FurnitureFactory {
     /// 팩토리 초기화
     /// </summary>
     /// <param name="_dic">에디터에서 생성.</param>
-    internal static void InitFurnitureDic(FurnitureBlueprintDictionary _dic)
-    {
+    internal static void InitFurnitureDic(FurnitureBlueprintDictionary _dic) {
 
         InitFurnitureDic(_dic.GetFurnitureBlueprintDic());
 
@@ -378,16 +374,14 @@ internal static class FurnitureFactory {
     /// <param name="_type">가구 설계도 이름(타입)</param>
     /// <param name="_furName">가구 이름</param>
     /// <returns>만들어진 새 가구 객체 [ 설계도가 없을 시 null 반환 ]</returns>
-    internal static FurnitureInfo MakeFurniture(string _type, string _furName)
-    {
+    internal static FurnitureInfo MakeFurniture(string _type, string _furName) {
 
         if (furnitureDictionay == null) {
             Debug.Log("팩토리가 초기화되지 않음.");
             return null;
         }
 
-        if (!furnitureDictionay.ContainsKey(_type))
-        {
+        if (!furnitureDictionay.ContainsKey(_type)) {
             Debug.Log("가구 설계도가 없음.");
             return null;
         }
@@ -398,8 +392,7 @@ internal static class FurnitureFactory {
 
 }
 
-public partial class MapManager : MonoBehaviour
-{
+public partial class MapManager : MonoBehaviour {
 
     [SerializeField]
     private FurnitureBlueprintDictionary furnitureBlueprintDictionary;
@@ -414,8 +407,7 @@ public partial class MapManager : MonoBehaviour
     //todo : 타일별 변화 or 동작 요소들 구현 영역.
 
     //mapmanager의 Start() 파생 영역
-    private void initFurnitureDic()
-    {
+    private void initFurnitureDic() {
         //팩토리 초기화
         FurnitureFactory.InitFurnitureDic(furnitureBlueprintDictionary);
     }
@@ -436,19 +428,15 @@ public partial class MapManager : MonoBehaviour
             return;
         }
 
-        if (curForcusedFurniture != null)
-        {
+        if (curForcusedFurniture != null) {
             curForcusedFurniture.DestroyFurnitureInfo();
             curForcusedFurniture = null;
             testButton.gameObject.SetActive(false);
             rotButton.gameObject.SetActive(false);
             releaseButton.gameObject.SetActive(false);
-        }
-        else
-        {
+        } else {
             ChangeMapViewMode(MapState.VIEW_MODE);
-            foreach (Map_Create_Destroy_Observer _o in MapCDObserverL)
-            {
+            foreach (Map_Create_Destroy_Observer _o in MapCDObserverL) {
                 _o.MapCreate(curMapData.GetCenterPos());
             }
         }
@@ -484,8 +472,7 @@ public partial class MapManager : MonoBehaviour
 
         if (curForcusedFurniture == null) return;
 
-        if (RegistFurniture(curForcusedFurniture.curTilePos, curForcusedFurniture.GetLeftTopVector(), curForcusedFurniture.GetRightDownVector()))
-        {
+        if (RegistFurniture(curForcusedFurniture.curTilePos, curForcusedFurniture.GetLeftTopVector(), curForcusedFurniture.GetRightDownVector())) {
             curForcusedFurniture = null;
             testButton.gameObject.SetActive(false);
             rotButton.gameObject.SetActive(false);
@@ -500,22 +487,19 @@ public partial class MapManager : MonoBehaviour
     public void debug_rotateFurniture() {
 
         if (curForcusedFurniture == null) return;
-            curForcusedFurniture.RotateFurniture();
+        curForcusedFurniture.RotateFurniture();
 
         bool isValid = ValidCheck(curForcusedFurniture.curTilePos, curForcusedFurniture.GetLeftTopVector(), curForcusedFurniture.GetRightDownVector());
 
-        if (isValid)
-        {
+        if (isValid) {
             curForcusedFurniture.SetValid();
-        }
-        else
-        {
+        } else {
             curForcusedFurniture.SetInvalid();
         }
 
         //지속적으로 상태 업데이트
         curForcusedFurniture.SetPosition(curMapData.GetFlatList()[(int)curForcusedFurniture.curTilePos.y][(int)curForcusedFurniture.curTilePos.x].GetFlatObj().transform.position + new Vector3(0, 1.5f, 0) + curForcusedFurniture.GetOffsetPosVec());
-        
+
 
     }
 
@@ -528,13 +512,13 @@ public partial class MapManager : MonoBehaviour
         releaseButton.gameObject.SetActive(false);
 
     }
-    
+
     /// <summary>
     /// update의 파생.
     /// </summary>
     private void EditModeUpdate() {
 
-        
+
 
         //버튼 위치 지정
         if (curForcusedFurniture != null) {
@@ -547,7 +531,7 @@ public partial class MapManager : MonoBehaviour
 
         }
 
-        #if !UNITY_EDITOR
+#if !UNITY_EDITOR
                 //발판 복구
                 if (Input.GetKeyDown(KeyCode.A)) {
 
@@ -560,7 +544,7 @@ public partial class MapManager : MonoBehaviour
                     }
 
                 }
-        #endif
+#endif
 
 
 
@@ -573,8 +557,7 @@ public partial class MapManager : MonoBehaviour
         }
 
         //가구 선택 지정.
-        if (Input.GetKeyDown(KeyCode.Q) || Input.GetMouseButtonDown(0))
-        {
+        if (Input.GetKeyDown(KeyCode.Q) || Input.GetMouseButtonDown(0)) {
             if (curForcusedFurniture != null) return;
             curForcusedFurniture = GetExistFurniture();
             if (curForcusedFurniture == null) return;
@@ -586,15 +569,13 @@ public partial class MapManager : MonoBehaviour
 
         //[컴퓨터용 디버그] - 버튼 대응 함수를 호출.
         //들고있는 가구를 등록.
-        if (Input.GetKeyDown(KeyCode.P) && curForcusedFurniture != null)
-        {
+        if (Input.GetKeyDown(KeyCode.P) && curForcusedFurniture != null) {
             debug_registFurniture();
         }
 
 
         //가구를 회전.
-        if (Input.GetKeyDown(KeyCode.R) && curForcusedFurniture != null)
-        {
+        if (Input.GetKeyDown(KeyCode.R) && curForcusedFurniture != null) {
             debug_rotateFurniture();
 
         }
@@ -638,14 +619,14 @@ public partial class MapManager : MonoBehaviour
                     //충분한 가구 공간이 확보되지 않음.
                     return false;
                 }
-            
+
             }
-        
+
         }
 
         //공간이 충분히 유효함.
         return true;
-    
+
     }
 
     /// <summary>
@@ -674,13 +655,10 @@ public partial class MapManager : MonoBehaviour
         List<Vector2> list = new List<Vector2>();
         List<List<FlatInfo>> flatList = curMapData.GetFlatList();
 
-        for (int i = x + leftOffset; i <= x + rightOffset; i++)
-        {
-            for (int j = y + topOffset; j <= y + downOffset; j++)
-            {
+        for (int i = x + leftOffset; i <= x + rightOffset; i++) {
+            for (int j = y + topOffset; j <= y + downOffset; j++) {
 
-                if (i != x || j != y)
-                {
+                if (i != x || j != y) {
                     list.Add(new Vector2(j, i));
                 }
                 flatList[j][i].HoldEmptyWidthRegist(new Vector2(y, x));
@@ -706,8 +684,7 @@ public partial class MapManager : MonoBehaviour
 
         Vector3 v = iRayCaster.GetCastHitPoint(LayerMasks.GetLayerMask(LayerMaskName.FLAT));
 
-        if (v.Equals(Vector3.negativeInfinity))
-        {
+        if (v.Equals(Vector3.negativeInfinity)) {
 
             Debug.Log("flat이 아님.");
             return Vector2.negativeInfinity;
@@ -715,18 +692,14 @@ public partial class MapManager : MonoBehaviour
         }
 
 
-        float j = v.x - GetBaseOffsetX() + GetUnitWidth() / 2;
-        float i = -(v.z - GetBaseOffsetZ() - GetUnitHeight() / 2);
+        float j = v.x + GetUnitWidth() / 2;
+        float i = -(v.z - GetUnitHeight() / 2);
 
-        if (j > 0 && j < GetWidth() * GetUnitWidth() && i > 0 && i < GetHeight() * GetUnitHeight())
-        {
-
+        if (j > 0 && j < GetWidth() * GetUnitWidth() && i > 0 && i < GetHeight() * GetUnitHeight()) {
             j = (int)(j / GetUnitWidth());
             i = (int)(i / GetUnitHeight());
 
-        }
-        else
-        {
+        } else {
             Debug.Log("outer flat area detected");
             return Vector2.negativeInfinity;
         }
@@ -789,7 +762,7 @@ public partial class MapManager : MonoBehaviour
 
             case MouseButton.MIDDLE:
                 //들고있는 가구의 등록에 대한 행동.
-                if (RegistFurniture(new Vector2(j, i), curForcusedFurniture.GetLeftTopVector(), curForcusedFurniture.GetRightDownVector())) { 
+                if (RegistFurniture(new Vector2(j, i), curForcusedFurniture.GetLeftTopVector(), curForcusedFurniture.GetRightDownVector())) {
                     curForcusedFurniture = null;
                 }
 
@@ -798,20 +771,16 @@ public partial class MapManager : MonoBehaviour
 
             case MouseButton.NONE:
 
-                
-#region 위치 및 유효성
 
-                if (curForcusedFurniture != null)
-                {
+                #region 위치 및 유효성
+
+                if (curForcusedFurniture != null) {
 
                     bool isValid = ValidCheck(new Vector2(flatPos.y, flatPos.x), curForcusedFurniture.GetLeftTopVector(), curForcusedFurniture.GetRightDownVector());
 
-                    if (isValid)
-                    {
+                    if (isValid) {
                         curForcusedFurniture.SetValid();
-                    }
-                    else
-                    {
+                    } else {
                         curForcusedFurniture.SetInvalid();
                     }
 
@@ -820,7 +789,7 @@ public partial class MapManager : MonoBehaviour
                     curForcusedFurniture.curTilePos.Set(j, i);
                 }
 
-#endregion
+                #endregion
 
                 break;
 
@@ -838,8 +807,7 @@ public partial class MapManager : MonoBehaviour
 
         Vector2 flatPos = GetClickedFlatPos();
 
-        if (flatPos.Equals(Vector2.negativeInfinity))
-        {
+        if (flatPos.Equals(Vector2.negativeInfinity)) {
             Debug.Log("유효한 flat이 아님");
             return;
         }
@@ -863,17 +831,13 @@ public partial class MapManager : MonoBehaviour
 
         List<List<FlatInfo>> flatList = curMapData.GetFlatList();
 
-        if (curForcusedFurniture != null)
-        {
+        if (curForcusedFurniture != null) {
 
             bool isValid = ValidCheck(new Vector2(flatPos.y, flatPos.x), curForcusedFurniture.GetLeftTopVector(), curForcusedFurniture.GetRightDownVector());
 
-            if (isValid)
-            {
+            if (isValid) {
                 curForcusedFurniture.SetValid();
-            }
-            else
-            {
+            } else {
                 curForcusedFurniture.SetInvalid();
             }
 
@@ -892,8 +856,7 @@ public partial class MapManager : MonoBehaviour
 
         Vector2 flatPos = GetClickedFlatPos();
 
-        if (flatPos.Equals(Vector2.negativeInfinity))
-        {
+        if (flatPos.Equals(Vector2.negativeInfinity)) {
             Debug.Log("유효한 flat이 아님");
             return null;
         }
@@ -904,8 +867,7 @@ public partial class MapManager : MonoBehaviour
 
         List<List<FlatInfo>> flatList = curMapData.GetFlatList();
 
-        if (flatList[i][j].GetIsEmpty())
-        {
+        if (flatList[i][j].GetIsEmpty()) {
             //가구를 차지하고 있는 타일이 아님.
             return null;
         }
@@ -913,8 +875,7 @@ public partial class MapManager : MonoBehaviour
         Vector2 baseVec = flatList[i][j].GetBaseIdx();
         List<Vector2> vectors = flatList[(int)baseVec.x][(int)baseVec.y].GetSubIdxes();
 
-        foreach (Vector2 _v in vectors)
-        {
+        foreach (Vector2 _v in vectors) {
             flatList[(int)_v.x][(int)_v.y].ReleaseEmpty();
         }
 
