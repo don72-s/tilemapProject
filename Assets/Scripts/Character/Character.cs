@@ -582,7 +582,6 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     /// <param name="endy">도착지 y좌표</param>
     public void AddMoveActionWithClearAciton(int endx, int endy) {
 
-        ChangeState(STATE.IDLE);
         ClearActionQueue();
 
         AddMoveAction(endx, endy);
