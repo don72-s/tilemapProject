@@ -96,11 +96,13 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     //예정된 행동 큐 정의
     //행동은 반환값이 없다는 가정하에 Action타입으로 정의
     private List<ActionBlock> actionQueue;
-    private Dictionary<STATE, string> animationTriggerDic;
 
 
     //관리용 애니메이터
     private Animator animator;
+    private Dictionary<STATE, int> aniHashDic;
+
+
     private SpriteRenderer spriteRenderer;
 
     private GameObject mapManager;
@@ -113,6 +115,13 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     {
         animator = gameObject.GetComponentInChildren<Animator>();
         spriteRenderer = gameObject.GetComponentInChildren<SpriteRenderer>();
+        aniHashDic = new Dictionary<STATE, int> {
+            { STATE.IDLE, Animator.StringToHash("Idle") },
+            { STATE.ACTING, Animator.StringToHash("Walk") },
+            { STATE.DRAG, Animator.StringToHash("Taking") },
+            { STATE.TOUCHED, Animator.StringToHash("Touched") }
+        };
+
     }
 
     public void Start()
@@ -127,7 +136,6 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
         mapScript.AddMapCreateDestroyObserver(this);
 
         actionQueue = new List<ActionBlock>();
-        animationTriggerDic = CharaAniTrigger.GetCharAniTriggerDic();
 
     }
 
@@ -173,12 +181,11 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
         AddTimerTick();
         ActionSwitcher();
 
-        #region 좌우방향 판정 및 스프라이트 적용
+        #region 좌우방향 판정 및 스프라이트 플립
 
         Vector3 v = Camera.main.transform.right;
         float dot = Vector3.Dot(dirVec, v);
 
-        //todo : 스프라이트 변경 코드로 대체
         changeDirectionSprite(dot >= 0 ? true : false);
 
         #endregion
@@ -288,10 +295,19 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     /// 애니메이션을 전환하는 함수.
     /// </summary>
     /// <param name="destState">목표로 하는 애니메이션 상태.</param>
-    private void ChangeAnimation(STATE destState) {
+    private void ChangeAnimation(STATE _destState) {
 
-        foreach (var dic in animationTriggerDic) {
-            animator.SetBool(dic.Value, dic.Key == destState);
+        if (!gameObject.activeSelf)
+            return;
+
+        if (aniHashDic.ContainsKey(_destState)) {
+
+            animator.Play(aniHashDic[_destState]);
+
+        } else {
+
+            Debug.LogWarning("상태에 대응하는 애니메이션이 존재하지 않음.");
+
         }
 
     }
