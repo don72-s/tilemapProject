@@ -866,8 +866,6 @@ public partial class MapManager : MonoBehaviour {
         float j = v.x + GetUnitWidth() / 2;
         float i = -(v.z - GetUnitHeight() / 2);
 
-        Debug.Log($"before : {j}, {i}");
-
         if (j > 0 && j < GetWidth() * GetUnitWidth() && i > 0 && i < GetHeight() * GetUnitHeight()) {
 
             j = (int)(j / GetUnitWidth());

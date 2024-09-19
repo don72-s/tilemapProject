@@ -87,7 +87,7 @@ public class CharacterHitHandler : MonoBehaviour
 
 
 
-    //todo : 둘 사이의 전환시간이 길 경우 어색하지만 터치는 짧은 순간에 이뤄지므로 짧을수록 어색함이 없어져서 자연스러움.
+    //둘 사이의 전환시간이 길 경우 어색하지만 터치는 짧은 순간에 이뤄지므로 짧을수록 어색함이 없어져서 자연스러움.
     /// <summary>
     /// 단위 시간 이상으로 눌렸을 경우 상태를 touch에서 drag로 변환.
     /// </summary>
