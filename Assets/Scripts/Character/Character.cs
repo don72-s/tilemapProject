@@ -178,12 +178,8 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
         width = mapScript.GetWidth();
         height = mapScript.GetHeight();
-        widthOffsetCount = mapScript.GetOriginalWidth() / 2;
-        heightOffsetCount = mapScript.GetOriginalHeight() / 2;
         unitMultiplizerX = mapScript.GetUnitWidth();
         unitMultiplizerZ = mapScript.GetUnitHeight();
-        rangeWidthOffset = mapScript.GetOriginalWidth() % 2 == 0 ? mapScript.GetUnitWidth() / 2 : 0;
-        rangeHeightOffset = mapScript.GetOriginalHeight() % 2 == 0 ? mapScript.GetUnitHeight() / 2 : 0;
 
         Vector3 initPos = mapScript.GetEmptyFlatPos();
 
@@ -668,10 +664,6 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
 
     //todo : 임시변수이므로 알고리즘에 따라 수정 필요.[ 2칸 단위 ]
-    int rangeWidthOffset;
-    int widthOffsetCount;
-    int rangeHeightOffset;
-    int heightOffsetCount;
     int unitMultiplizerX;//바닥의 x크기
     int unitMultiplizerZ;//바닥의 y크기
     int width;
