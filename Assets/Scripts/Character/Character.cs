@@ -68,7 +68,7 @@ class MoveActionBlock : ActionBlock
 public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Observer, ICharacterAction
 {
 
-    public enum STATE { IDLE, ACTING, TAKING, DRAG, TOUCHED };
+    public enum STATE { IDLE, WALKING, TAKING, DRAG, TOUCHED };
     public enum ACCEPTABLE { ACCEPT, DENY };
 
     //현재 캐릭터의 상태 의미
@@ -110,16 +110,40 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
     private IRayCaster iRayCaster;
 
+    
+    [Serializable]
+    struct AnimationName {
+
+        [SerializeField]
+        string idleAniName;
+        [SerializeField]
+        string walkAniName;
+        [SerializeField]
+        string takingAniName;
+        [SerializeField]
+        string touchedAniName;
+
+        public string Idle { get { return idleAniName; } private set { } }
+        public string Walk { get { return walkAniName; } private set { } }
+        public string Taking { get { return takingAniName; } private set { } }
+        public string Touched { get { return touchedAniName; } private set { } }
+
+    }
+
+    [Header("Animation Names")]
+    [SerializeField]
+    AnimationName animationNames;
 
     private void Awake()
     {
+        
         animator = gameObject.GetComponentInChildren<Animator>();
         spriteRenderer = gameObject.GetComponentInChildren<SpriteRenderer>();
         aniHashDic = new Dictionary<STATE, int> {
-            { STATE.IDLE, Animator.StringToHash("Idle") },
-            { STATE.ACTING, Animator.StringToHash("Walk") },
-            { STATE.DRAG, Animator.StringToHash("Taking") },
-            { STATE.TOUCHED, Animator.StringToHash("Touched") }
+            { STATE.IDLE, Animator.StringToHash(animationNames.Idle) },
+            { STATE.WALKING, Animator.StringToHash(animationNames.Walk) },
+            { STATE.DRAG, Animator.StringToHash(animationNames.Taking) },
+            { STATE.TOUCHED, Animator.StringToHash(animationNames.Touched) }
         };
 
     }
@@ -174,6 +198,8 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
         }
 
     }
+
+    public int acnt;
 
     public void Update()
     {
@@ -257,6 +283,8 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
         return;
     }
 
+    
+
     /// <summary>
     /// 상태를 변환시키고 싶을 때 호출되는 함수.
     ///  + 상태 변환시 최초 한번 호출될 메소드들을 등록.
@@ -270,22 +298,17 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
         switch (_state)
         {
-            case STATE.ACTING:
-                ChangeAnimation(STATE.ACTING);
-                break;
-
+            case STATE.WALKING:
             case STATE.IDLE:
-                ChangeAnimation(STATE.IDLE);
-                break;
-
             case STATE.DRAG:
-                ChangeAnimation(STATE.DRAG);
+                ChangeAnimation(_state);
                 break;
 
             case STATE.TOUCHED:
                 OffsetInit();
                 ClearActionQueue();
                 break;
+
         }
 
         curState = _state;
@@ -325,7 +348,7 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
             case STATE.IDLE:
                 break;
 
-            case STATE.ACTING:
+            case STATE.WALKING:
                 moving();
                 break;
 
@@ -334,9 +357,6 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
                 break;
 
             case STATE.TOUCHED:
-                break;
-
-            default:
                 break;
 
         }
@@ -497,7 +517,7 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
         for (int i = actionQueue.Count - 1; i >= 0; i--) {
             //이전에 이동하는 경우가 존재하는 경우. 해당 행동의 마지막 목적지로부터 출발.
-            if (actionQueue[i].getState() == STATE.ACTING) {
+            if (actionQueue[i].getState() == STATE.WALKING) {
                 startPos = mapScript.Pos_To_TileXY(((MoveActionBlock)actionQueue[i]).GetEndPos());
                 isFirstMove = false;
                 break;
@@ -562,7 +582,7 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
                 heightOffset,
                 -pathL[i].y * unitMultiplizerZ);
 
-            actionQueue.Add(new MoveActionBlock(STATE.ACTING, ACCEPTABLE.DENY, this, endPosV3));
+            actionQueue.Add(new MoveActionBlock(STATE.WALKING, ACCEPTABLE.DENY, this, endPosV3));
 
 
         }
@@ -589,6 +609,8 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
         setTimeDelayOffset(0);
 
     }
+
+   
 
 
     //행동 인터페이스 정의.
