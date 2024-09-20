@@ -198,6 +198,7 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
         AddTimerTick();
         ActionSwitcher();
 
+        //todo : 랜더러가 있는 자식으로 이동
         #region 좌우방향 판정 및 스프라이트 플립
 
         Vector3 v = Camera.main.transform.right;
@@ -209,6 +210,7 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
     }
 
+    //==============================================================
     //상태분기
 
     /// <summary>
@@ -219,78 +221,6 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
         stateArray[(int)curState].Update();
 
     }
-
-
-    //다음행동결정
-
-    /// <summary>
-    /// 타이머 진행
-    /// </summary>
-    void AddTimerTick() {
-
-        if (timerTick < decideDelay) {
-
-            timerTick += Time.deltaTime;
-
-        } else {
-
-            if (accState == ACCEPTABLE.DENY) return;//조건에 따른 행동이 끝나지 않았을 경우 대기.
-            //다음 행동 실행.
-
-            actionQueuePop();
-            timerTick = 0;
-        }
-
-    }
-
-
-    /// <summary>
-    /// 액션큐에서 pop하여 행동 수행을 시작하는 함수.
-    /// </summary>
-    void actionQueuePop() {
-
-        //액션큐에 다음 행동이 없을 경우.
-        if (actionQueue.Count <= 0) {
-            //임시로 디폴트 행위 지정 => 두 지점 왕복하게 만듦.
-
-            #region 임시로 자동 행위 지정해놓은 영역, 정책에 따라 정의 필요 [ todo : ]
-
-            AddMoveAction(1, 3);
-            AddMoveAction(5, 1);
-
-
-            if (actionQueue.Count <= 0) {
-                Debug.Log("움직임 정의 실패");
-                return;
-            }
-
-            #endregion
-        }
-
-
-        //행동블록 실행.
-        ActionBlock ab = actionQueue[0];
-        actionQueue.RemoveAt(0);
-        changeAcceptable(ab.getAcceptable());
-        ChangeState(ab.getState());
-        ab.PlayAction();
-
-    }
-
-    /// <summary>
-    /// 현재의 액션큐를 모두 비움
-    /// 액션큐를 비운 뒤 자동으로 다음 엑션을 할 지 결정
-    /// </summary>
-    /// <param name="_IsAccept">Deny인 경우 다음 action을 하지 않음</param>
-    public void ClearActionQueue(ACCEPTABLE acceptNextAction = ACCEPTABLE.ACCEPT) {
-
-        actionQueue.Clear();
-        changeAcceptable(acceptNextAction);
-        Debug.Log("액션 큐 초기화됨.");
-        return;
-
-    }
-
 
     #region 상태패턴 클래스들 정의
 
@@ -463,30 +393,6 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
     }
 
-
-    /// <summary>
-    /// 애니메이션을 전환하는 함수.
-    /// </summary>
-    /// <param name="destState">목표로 하는 애니메이션 상태.</param>
-    private void ChangeAnimation(STATE _destState) {
-
-        if (!gameObject.activeSelf)
-            return;
-
-        if (aniHashDic.ContainsKey(_destState)) {
-
-            animator.Play(aniHashDic[_destState]);
-
-        } else {
-
-            Debug.LogWarning("상태에 대응하는 애니메이션이 존재하지 않음.");
-
-        }
-
-    }
-
-
-
     /// <summary>
     /// 캐릭터가 터치되었을때의 바닥과 터치 위치간의 offset 설정.
     /// </summary>
@@ -506,6 +412,83 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
     }
 
+
+
+    //==============================================================
+    //다음행동결정
+
+    /// <summary>
+    /// 타이머 진행
+    /// </summary>
+    void AddTimerTick() {
+
+        if (timerTick < decideDelay) {
+
+            timerTick += Time.deltaTime;
+
+        } else {
+
+            if (accState == ACCEPTABLE.DENY) return;//조건에 따른 행동이 끝나지 않았을 경우 대기.
+            //다음 행동 실행.
+
+            actionQueuePop();
+            timerTick = 0;
+        }
+
+    }
+
+    public void changeAcceptable(ACCEPTABLE _acc) {
+
+        accState = _acc;
+
+    }
+
+    /// <summary>
+    /// 액션큐에서 pop하여 행동 수행을 시작하는 함수.
+    /// </summary>
+    void actionQueuePop() {
+
+        //액션큐에 다음 행동이 없을 경우.
+        if (actionQueue.Count <= 0) {
+            //임시로 디폴트 행위 지정 => 두 지점 왕복하게 만듦.
+
+            #region 임시로 자동 행위 지정해놓은 영역, 정책에 따라 정의 필요 [ todo : ]
+
+            AddMoveAction(1, 3);
+            AddMoveAction(5, 1);
+
+
+            if (actionQueue.Count <= 0) {
+                Debug.Log("움직임 정의 실패");
+                return;
+            }
+
+            #endregion
+        }
+
+
+        //행동블록 실행.
+        ActionBlock ab = actionQueue[0];
+        actionQueue.RemoveAt(0);
+        changeAcceptable(ab.getAcceptable());
+        ChangeState(ab.getState());
+        ab.PlayAction();
+
+    }
+
+    /// <summary>
+    /// 현재의 액션큐를 모두 비움
+    /// 액션큐를 비운 뒤 자동으로 다음 엑션을 할 지 결정
+    /// </summary>
+    /// <param name="_IsAccept">Deny인 경우 다음 action을 하지 않음</param>
+    public void ClearActionQueue(ACCEPTABLE acceptNextAction = ACCEPTABLE.ACCEPT) {
+
+        actionQueue.Clear();
+        changeAcceptable(acceptNextAction);
+        Debug.Log("액션 큐 초기화됨.");
+        return;
+
+    }
 
     #region 행동 정의 영역 ( action interface )
 
@@ -647,11 +630,6 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
     #endregion
 
-
-    public STATE getState() {
-        return curState;
-    }
-
     /// <summary>
     /// 다음 행동 결정까지의 딜레이를 수동으로 지정
     /// </summary>
@@ -662,27 +640,38 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
     }
 
-    public void changeAcceptable(ACCEPTABLE _acc) {
 
-        accState = _acc;
 
-    }
+    //===============================================================
+    //애니메이션
 
     /// <summary>
-    /// 카메라 각도와 이동 방향에 따른 스프라이트 좌우 지정
+    /// 애니메이션을 전환하는 함수.
     /// </summary>
-    /// <param name="_isRight">시점 기준 우방향으로 이동중인지 여부</param>
-    void changeDirectionSprite(bool _isRight) {
-        //character debuger
-        //Debug.Log(_isRight ? "direction : Right" : "direction : Left");
+    /// <param name="destState">목표로 하는 애니메이션 상태.</param>
+    private void ChangeAnimation(STATE _destState) {
 
-        if (_isRight) {
-            spriteRenderer.flipX = true;
+        if (!gameObject.activeSelf)
+            return;
+
+        if (aniHashDic.ContainsKey(_destState)) {
+
+            animator.Play(aniHashDic[_destState]);
+
         } else {
-            spriteRenderer.flipX = false;
+
+            Debug.LogWarning("상태에 대응하는 애니메이션이 존재하지 않음.");
+
         }
+
     }
 
+
+
+
+
+    //========================================================================
+    //옵저버 대응 함수 구현부
 
     //todo : 임시변수이므로 알고리즘에 따라 수정 필요.[ 2칸 단위 ]
     int unitMultiplizerX;//바닥의 x크기
@@ -743,5 +732,24 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     }
 
     #endregion
+
+
+
+    //todo : 스프라이트를 가진 자식으로 코드 이동.
+    /// <summary>
+    /// 카메라 각도와 이동 방향에 따른 스프라이트 좌우 지정
+    /// </summary>
+    /// <param name="_isRight">시점 기준 우방향으로 이동중인지 여부</param>
+    void changeDirectionSprite(bool _isRight) {
+        //character debuger
+        //Debug.Log(_isRight ? "direction : Right" : "direction : Left");
+
+        if (_isRight) {
+            spriteRenderer.flipX = true;
+        } else {
+            spriteRenderer.flipX = false;
+        }
+    }
+
 
 }

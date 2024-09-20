@@ -4,17 +4,12 @@ using UnityEngine;
 
 public class cameraGazer : MonoBehaviour
 {
-    // Start is called before the first frame update
 
-/*    public GameObject hole;
-*/
-    // Update is called once per frame
     void Update()
     {
-/*        transform.rotation = hole.transform.rotation;
-*/        Quaternion tq = Camera.main.transform.rotation;
-        tq.x = 0;
-        tq.z = 0;
-        transform.rotation = tq;
+        Quaternion q = Camera.main.transform.rotation;
+        q.x = 0;
+        q.z = 0;
+        transform.rotation = q;
     }
 }
