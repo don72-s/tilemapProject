@@ -68,7 +68,7 @@ class MoveActionBlock : ActionBlock
 public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Observer, ICharacterAction
 {
 
-    public enum STATE { IDLE, WALKING, TAKING, DRAG, TOUCHED };
+    public enum STATE { IDLE, WALKING, TOUCHED, DRAG, SIZE };
     public enum ACCEPTABLE { ACCEPT, DENY };
 
     //현재 캐릭터의 상태 의미
@@ -98,14 +98,15 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     private List<ActionBlock> actionQueue;
 
 
-    //관리용 애니메이터
+    
     private Animator animator;
+
     private Dictionary<STATE, int> aniHashDic;
+    private BaseState[] stateArray;
 
 
     private SpriteRenderer spriteRenderer;
 
-    private GameObject mapManager;
     private MapManager mapScript;
 
     private IRayCaster iRayCaster;
@@ -139,12 +140,25 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
         
         animator = gameObject.GetComponentInChildren<Animator>();
         spriteRenderer = gameObject.GetComponentInChildren<SpriteRenderer>();
+
+        InitStateArray();
+            
         aniHashDic = new Dictionary<STATE, int> {
-            { STATE.IDLE, Animator.StringToHash(animationNames.Idle) },
-            { STATE.WALKING, Animator.StringToHash(animationNames.Walk) },
-            { STATE.DRAG, Animator.StringToHash(animationNames.Taking) },
-            { STATE.TOUCHED, Animator.StringToHash(animationNames.Touched) }
+            { STATE.IDLE, Animator.StringToHash(animationNames.Idle)},
+            { STATE.WALKING, Animator.StringToHash(animationNames.Walk)},
+            { STATE.DRAG, Animator.StringToHash(animationNames.Taking)},
+            { STATE.TOUCHED, Animator.StringToHash(animationNames.Touched)}
         };
+
+    }
+
+    private void InitStateArray() { 
+    
+        stateArray = new BaseState[(int)STATE.SIZE];
+        stateArray[(int)STATE.IDLE] = new IdleState(STATE.IDLE, this);
+        stateArray[(int)STATE.WALKING] = new WalkState(STATE.WALKING, this);
+        stateArray[(int)STATE.DRAG] = new DragState(STATE.DRAG, this);
+        stateArray[(int)STATE.TOUCHED] = new TouchedState(STATE.TOUCHED, this);
 
     }
 
@@ -194,8 +208,6 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
         }
 
     }
-
-    public int acnt;
 
     public void Update()
     {
@@ -279,7 +291,116 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
         return;
     }
 
-    
+
+    #region 상태패턴 클래스들 정의
+
+    private class CharacterState : BaseState {
+
+        protected Character myCharacter;
+
+        public CharacterState(STATE _myState, Character _myCharacter) : base(_myState) { myCharacter = _myCharacter; }
+
+
+    }
+
+    private class IdleState : CharacterState {
+
+        public IdleState(STATE _myState, Character _myCharacter) : base(_myState, _myCharacter) {  }
+
+        public override void Enter() {
+
+            myCharacter.ChangeAnimation(myState);
+
+        }
+
+    }
+    private class WalkState : CharacterState {
+
+        public WalkState(STATE _myState, Character _myCharacter) : base(_myState, _myCharacter) { }
+
+        public override void Enter() {
+
+            myCharacter.ChangeAnimation(myState);
+
+        }
+
+        //todo : 이동 알고리즘에 따라서 내용 수정 필요.
+        /// <summary>
+        /// 움직임 상태일 때 계속해서 호출될 함수.
+        /// </summary>
+        public override void Update() {
+
+            float curDistance = (myCharacter.destVec - myCharacter.transform.position).magnitude;
+
+            if (curDistance < 0.07f || (myCharacter.lastDistance - curDistance) < 0) {
+                myCharacter.changeAcceptable(ACCEPTABLE.ACCEPT);
+
+                myCharacter.transform.position = myCharacter.destVec;
+
+                if (myCharacter.actionQueue.Count > 0) {
+                    myCharacter.setTimeDelayOffset(0);//바로 다음행동하도록 지시
+                }
+            } else {
+                myCharacter.transform.Translate(myCharacter.dirVec * myCharacter.moveSpeed * Time.deltaTime);
+                myCharacter.lastDistance = curDistance;
+            }
+            
+        }
+
+    }
+    private class TouchedState : CharacterState {
+
+        public TouchedState(STATE _myState, Character _myCharacter) : base(_myState, _myCharacter) { }
+
+        public override void Enter() {
+
+            myCharacter.OffsetInit();
+            myCharacter.ClearActionQueue();
+
+        }
+
+    }
+    private class DragState : CharacterState {
+
+        public DragState(STATE _myState, Character _myCharacter) : base(_myState, _myCharacter) { }
+
+        public override void Enter() {
+
+            myCharacter.ChangeAnimation(myState);
+
+        }
+
+        /// <summary>
+        /// 드래그되었을 때 계속해서 호출될 함수.
+        /// </summary>
+        public override void Update() {
+     
+            Vector3 flatHitPoint = myCharacter.iRayCaster.GetCastHitPoint(LayerMasks.GetLayerMask(LayerMaskName.FLAT));
+
+            if (!flatHitPoint.Equals(Vector3.negativeInfinity)) {
+                Vector3 tmpPos = flatHitPoint + myCharacter.touchOffsetVec;
+
+                tmpPos = new Vector3(Mathf.Clamp(tmpPos.x, 0, (myCharacter.width - 1) * myCharacter.unitMultiplizerX),
+                                        tmpPos.y,
+                                        Mathf.Clamp(tmpPos.z, -((myCharacter.height - 1) * myCharacter.unitMultiplizerZ), 0)
+                                    );
+
+                myCharacter.transform.position = tmpPos;
+
+            } else {
+
+                Debug.Log("충돌체 발견 x");
+                //todo : 백업좌표 or 기본좌표 지정 및 이동
+                //예외상황 : 끌어 움직이는데 제한 영역을 벗어난 경우.
+
+            }
+
+        }
+
+    }
+
+    #endregion
+
 
     /// <summary>
     /// 상태를 변환시키고 싶을 때 호출되는 함수.
@@ -292,23 +413,12 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
         //character debuger
         //Debug.Log("state : " + _state);
 
-        switch (_state)
-        {
-            case STATE.WALKING:
-            case STATE.IDLE:
-            case STATE.DRAG:
-                ChangeAnimation(_state);
-                break;
-
-            case STATE.TOUCHED:
-                OffsetInit();
-                ClearActionQueue();
-                break;
-
-        }
-
+        stateArray[(int)curState].Exit();
         curState = _state;
+        stateArray[(int)curState].Enter();
+
     }
+
 
     /// <summary>
     /// 애니메이션을 전환하는 함수.
@@ -333,29 +443,12 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
 
     /// <summary>
-    /// 현재 상태에 따라 계속해서 호출될 동작(함수)들을 등록.
+    /// 현재 상태에 따라 계속해서 대응 Update 호출
     /// </summary>
     void ActionSwitcher()
     {
 
-        switch (curState)
-        {
-
-            case STATE.IDLE:
-                break;
-
-            case STATE.WALKING:
-                moving();
-                break;
-
-            case STATE.DRAG:
-                DragUpdate();
-                break;
-
-            case STATE.TOUCHED:
-                break;
-
-        }
+        stateArray[(int)curState].Update();
 
     }
 
@@ -381,66 +474,6 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
 
     }
-
-
-    /// <summary>
-    /// 드래그되었을 때 계속해서 호출될 함수.
-    /// </summary>
-    private void DragUpdate()
-    {
-
-        Vector3 flatHitPoint = iRayCaster.GetCastHitPoint(LayerMasks.GetLayerMask(LayerMaskName.FLAT));
-        if (!flatHitPoint.Equals(Vector3.negativeInfinity))
-        {
-            Vector3 tmpPos = flatHitPoint + touchOffsetVec;
-
-            tmpPos = new Vector3(Mathf.Clamp(tmpPos.x, 0, (width - 1) * unitMultiplizerX),
-                                  tmpPos.y,
-                                  Mathf.Clamp(tmpPos.z, -((height - 1) * unitMultiplizerZ), 0)
-                                );
-
-            transform.position = tmpPos;
-        }
-        else
-        {
-            Debug.Log("충돌체 발견 x");
-            //todo : 백업좌표 or 기본좌표 지정 및 이동
-            //예외상황 : 끌어 움직이는데 제한 영역을 벗어난 경우.
-        }
-
-    }
-
-
-    //todo : 이동 알고리즘에 따라서 내용 수정 필요.
-    /// <summary>
-    /// 움직임 상태일 때 계속해서 호출될 함수.
-    /// </summary>
-    void moving()
-    {
-
-        float curDistance = (destVec - transform.position).magnitude;
-
-
-        if (curDistance < 0.07f || (lastDistance - curDistance) < 0)
-        {
-            changeAcceptable(ACCEPTABLE.ACCEPT);
-
-            transform.position = destVec;
-            
-            if (actionQueue.Count > 0)
-            {
-                setTimeDelayOffset(0);//바로 다음행동하도록 지시
-            }
-        }
-        else
-        {
-            transform.Translate(dirVec * moveSpeed * Time.deltaTime);
-            lastDistance = curDistance;
-        }
-
-    }
-
-
 
     #region 대응 호출 함수(외부 호출 가능)
 
