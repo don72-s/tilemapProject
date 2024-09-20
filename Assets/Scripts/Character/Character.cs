@@ -1,12 +1,9 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using System;
 
 
-class ActionBlock
-{
+class ActionBlock {
 
     protected Character.STATE state;
     protected Character.ACCEPTABLE acceptable;
@@ -14,37 +11,31 @@ class ActionBlock
 
     public ActionBlock() { }
 
-    public ActionBlock(Character.STATE _state, Character.ACCEPTABLE _acceptable, ICharacterAction _character)
-    {
+    public ActionBlock(Character.STATE _state, Character.ACCEPTABLE _acceptable, ICharacterAction _character) {
         state = _state;
         acceptable = _acceptable;
         character = _character;
     }
 
-    public Character.STATE getState()
-    {
+    public Character.STATE getState() {
         return state;
     }
 
-    public Character.ACCEPTABLE getAcceptable()
-    {
+    public Character.ACCEPTABLE getAcceptable() {
         return acceptable;
     }
 
-    public virtual void PlayAction()
-    {
+    public virtual void PlayAction() {
         character.PlayIdleAction();
     }
 
 }
 
-class MoveActionBlock : ActionBlock
-{
+class MoveActionBlock : ActionBlock {
 
     private Vector3 endPos;
 
-    public MoveActionBlock(Character.STATE _state, Character.ACCEPTABLE _acceptable, ICharacterAction _character, Vector3 _endPos)
-    {
+    public MoveActionBlock(Character.STATE _state, Character.ACCEPTABLE _acceptable, ICharacterAction _character, Vector3 _endPos) {
         state = _state;
         acceptable = _acceptable;
         endPos = _endPos;
@@ -55,8 +46,7 @@ class MoveActionBlock : ActionBlock
         return endPos;
     }
 
-    override public void PlayAction()
-    {
+    override public void PlayAction() {
         character.PlayMoveAction(endPos);
     }
 
@@ -65,8 +55,7 @@ class MoveActionBlock : ActionBlock
 
 
 
-public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Observer, ICharacterAction
-{
+public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Observer, ICharacterAction {
 
     public enum STATE { IDLE, WALKING, TOUCHED, DRAG, SIZE };
     public enum ACCEPTABLE { ACCEPT, DENY };
@@ -98,7 +87,7 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     private List<ActionBlock> actionQueue;
 
 
-    
+
     private Animator animator;
 
     private Dictionary<STATE, int> aniHashDic;
@@ -111,7 +100,7 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
     private IRayCaster iRayCaster;
 
-    
+
     [Serializable]
     struct AnimationName {
 
@@ -135,14 +124,13 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     [SerializeField]
     AnimationName animationNames;
 
-    private void Awake()
-    {
-        
+    private void Awake() {
+
         animator = gameObject.GetComponentInChildren<Animator>();
         spriteRenderer = gameObject.GetComponentInChildren<SpriteRenderer>();
 
         InitStateArray();
-            
+
         aniHashDic = new Dictionary<STATE, int> {
             { STATE.IDLE, Animator.StringToHash(animationNames.Idle)},
             { STATE.WALKING, Animator.StringToHash(animationNames.Walk)},
@@ -152,8 +140,8 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
     }
 
-    private void InitStateArray() { 
-    
+    private void InitStateArray() {
+
         stateArray = new BaseState[(int)STATE.SIZE];
         stateArray[(int)STATE.IDLE] = new IdleState(STATE.IDLE, this);
         stateArray[(int)STATE.WALKING] = new WalkState(STATE.WALKING, this);
@@ -162,8 +150,7 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
     }
 
-    public void Start()
-    {
+    public void Start() {
 
         gameObject.SetActive(false);
 
@@ -177,8 +164,7 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
     }
 
-    public void initCharacter()
-    {
+    public void initCharacter() {
         timerTick = 0;
 
         ChangeState(STATE.IDLE);
@@ -197,20 +183,17 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
         Vector3 initPos = mapScript.GetEmptyFlatPos();
 
-        if (initPos == Vector3.negativeInfinity)
-        {
+        if (initPos == Vector3.negativeInfinity) {
             Debug.LogError("빈 좌표공간이 없음.");
             transform.position = new Vector3(0, heightOffset, 0);
-        }
-        else {
+        } else {
             initPos.y = heightOffset;
             transform.position = initPos;
         }
 
     }
 
-    public void Update()
-    {
+    public void Update() {
 
         AddTimerTick();
         ActionSwitcher();
@@ -226,20 +209,34 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
     }
 
+    //상태분기
+
+    /// <summary>
+    /// 현재 상태에 따라 계속해서 대응 Update 호출
+    /// </summary>
+    void ActionSwitcher() {
+
+        stateArray[(int)curState].Update();
+
+    }
+
+
+    //다음행동결정
 
     /// <summary>
     /// 타이머 진행
     /// </summary>
-    void AddTimerTick()
-    {
-        if (timerTick < decideDelay)
-        {
+    void AddTimerTick() {
+
+        if (timerTick < decideDelay) {
+
             timerTick += Time.deltaTime;
-        }
-        else
-        {
+
+        } else {
+
             if (accState == ACCEPTABLE.DENY) return;//조건에 따른 행동이 끝나지 않았을 경우 대기.
             //다음 행동 실행.
+
             actionQueuePop();
             timerTick = 0;
         }
@@ -250,11 +247,10 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     /// <summary>
     /// 액션큐에서 pop하여 행동 수행을 시작하는 함수.
     /// </summary>
-    void actionQueuePop()
-    {
+    void actionQueuePop() {
+
         //액션큐에 다음 행동이 없을 경우.
-        if (actionQueue.Count <= 0)
-        {
+        if (actionQueue.Count <= 0) {
             //임시로 디폴트 행위 지정 => 두 지점 왕복하게 만듦.
 
             #region 임시로 자동 행위 지정해놓은 영역, 정책에 따라 정의 필요 [ todo : ]
@@ -282,13 +278,17 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     }
 
     /// <summary>
-    /// 현재의 액션큐를 모두 비움.
+    /// 현재의 액션큐를 모두 비움
+    /// 액션큐를 비운 뒤 자동으로 다음 엑션을 할 지 결정
     /// </summary>
-    public void ClearActionQueue() {
+    /// <param name="_IsAccept">Deny인 경우 다음 action을 하지 않음</param>
+    public void ClearActionQueue(ACCEPTABLE acceptNextAction = ACCEPTABLE.ACCEPT) {
+
         actionQueue.Clear();
-        changeAcceptable(ACCEPTABLE.ACCEPT);
+        changeAcceptable(acceptNextAction);
         Debug.Log("액션 큐 초기화됨.");
         return;
+
     }
 
 
@@ -297,15 +297,21 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     private class CharacterState : BaseState {
 
         protected Character myCharacter;
+        protected STATE myState { get; private set; }
 
-        public CharacterState(STATE _myState, Character _myCharacter) : base(_myState) { myCharacter = _myCharacter; }
+        public CharacterState(STATE _myState, Character _myCharacter) {
+
+            myState = _myState;
+            myCharacter = _myCharacter;
+
+        }
 
 
     }
 
     private class IdleState : CharacterState {
 
-        public IdleState(STATE _myState, Character _myCharacter) : base(_myState, _myCharacter) {  }
+        public IdleState(STATE _myState, Character _myCharacter) : base(_myState, _myCharacter) { }
 
         public override void Enter() {
 
@@ -344,7 +350,7 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
                 myCharacter.transform.Translate(myCharacter.dirVec * myCharacter.moveSpeed * Time.deltaTime);
                 myCharacter.lastDistance = curDistance;
             }
-            
+
         }
 
     }
@@ -354,8 +360,18 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
         public override void Enter() {
 
-            myCharacter.OffsetInit();
             myCharacter.ClearActionQueue();
+
+            myCharacter.ChangeAnimation(STATE.TOUCHED);
+            //5초동안 touched 애니메이션 재생.
+            myCharacter.setTimeDelayOffset(5);
+            //이후 idle 액션을 실행.
+            myCharacter.AddIdleAction();
+        }
+
+        public override void Exit() {
+
+            myCharacter.changeAcceptable(ACCEPTABLE.ACCEPT);
 
         }
 
@@ -366,6 +382,7 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
         public override void Enter() {
 
+            myCharacter.ClearActionQueue(ACCEPTABLE.DENY);
             myCharacter.ChangeAnimation(myState);
 
         }
@@ -374,7 +391,7 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
         /// 드래그되었을 때 계속해서 호출될 함수.
         /// </summary>
         public override void Update() {
-     
+
             Vector3 flatHitPoint = myCharacter.iRayCaster.GetCastHitPoint(LayerMasks.GetLayerMask(LayerMaskName.FLAT));
 
             if (!flatHitPoint.Equals(Vector3.negativeInfinity)) {
@@ -397,6 +414,35 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
         }
 
+
+        public override void Exit() {
+
+            DragReleased();
+            myCharacter.changeAcceptable(ACCEPTABLE.ACCEPT);
+
+        }
+
+        /// <summary>
+        /// 드래그가 해제될 때 캐릭터의 위치를 조정하는 함수
+        /// </summary>
+        private void DragReleased() {
+
+            Vector2Int pos = myCharacter.mapScript.Pos_To_TileXY(
+                                 new Vector3(
+                                     myCharacter.transform.position.x,
+                                     myCharacter.heightOffset,
+                                     myCharacter.transform.position.z
+                                 )
+                             );
+                             
+            
+            
+            if (myCharacter.mapScript.GetTilemapInfo()[pos.y][pos.x] == -1) {
+                myCharacter.initCharacter();
+            }
+
+        }
+
     }
 
     #endregion
@@ -404,11 +450,9 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
     /// <summary>
     /// 상태를 변환시키고 싶을 때 호출되는 함수.
-    ///  + 상태 변환시 최초 한번 호출될 메소드들을 등록.
     /// </summary>
     /// <param name="_state">전환 및 진입할 상태</param>
-    public void ChangeState(STATE _state)
-    {
+    public void ChangeState(STATE _state) {
 
         //character debuger
         //Debug.Log("state : " + _state);
@@ -442,32 +486,19 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     }
 
 
-    /// <summary>
-    /// 현재 상태에 따라 계속해서 대응 Update 호출
-    /// </summary>
-    void ActionSwitcher()
-    {
-
-        stateArray[(int)curState].Update();
-
-    }
-
 
     /// <summary>
-    /// 캐릭터가 최초 터치되었을때의 바닥과 터치 위치간의 offset 설정.
+    /// 캐릭터가 터치되었을때의 바닥과 터치 위치간의 offset 설정.
     /// </summary>
-    private void OffsetInit()
-    {
+    public void OffsetInit() {
+
         Vector3 charHitPoint = iRayCaster.GetCastHitPoint(LayerMasks.GetLayerMask(LayerMaskName.CHARACTER));
         Vector3 flatHitPoint = iRayCaster.GetCastHitPoint(LayerMasks.GetLayerMask(LayerMaskName.FLAT));
 
-        if (!charHitPoint.Equals(Vector3.negativeInfinity) && !flatHitPoint.Equals(Vector3.negativeInfinity))
-        {
-                         //충돌바닥 -> 충돌 캐릭터 지점 // + // 충돌 캐릭터 지점 -> 캐릭터 객체 중심좌표  :  충돌바닥 지점 -> 캐릭터 객체 중심좌표
+        if (!charHitPoint.Equals(Vector3.negativeInfinity) && !flatHitPoint.Equals(Vector3.negativeInfinity)) {
+            //충돌바닥 -> 충돌 캐릭터 지점 // + // 충돌 캐릭터 지점 -> 캐릭터 객체 중심좌표  :  충돌바닥 지점 -> 캐릭터 객체 중심좌표
             touchOffsetVec = (charHitPoint - flatHitPoint) + (transform.position - charHitPoint);
-        }
-        else
-        {
+        } else {
             //todo : 예외처리
             Debug.Log("충돌 대상 존재x");
         }
@@ -475,44 +506,13 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
     }
 
-    #region 대응 호출 함수(외부 호출 가능)
-
-    /// <summary>
-    /// 캐릭터 터치 이벤트가 발생했을 경우 호출될 함수.
-    /// </summary>
-    public void TouchedAction()
-    {
-        ChangeAnimation(STATE.TOUCHED);
-
-        //5초동안 touched 애니메이션 재생.
-        setTimeDelayOffset(5);
-
-        //이후 idle 액션을 실행.
-        AddIdleAction();
-    }
-
-    /// <summary>
-    /// 드래그가 종료되었을 때 호출되는 함수.
-    /// </summary>
-    public void DragReleased() {
-        Vector2Int pos = mapScript.Pos_To_TileXY(new Vector3(transform.position.x, heightOffset, transform.position.z));
-        if (mapScript.GetTilemapInfo()[pos.y][pos.x] == -1)
-        {
-            initCharacter();
-        }
-    }
-
-
-    #endregion
-
 
     #region 행동 정의 영역 ( action interface )
 
     /// <summary>
     /// idle행동을 액션큐에 추가.
     /// </summary>
-    public void AddIdleAction()
-    {
+    public void AddIdleAction() {
         actionQueue.Add(new ActionBlock(STATE.IDLE, ACCEPTABLE.ACCEPT, this));
     }
 
@@ -527,15 +527,13 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     /// </summary>
     /// <param name="endx">도착지 x좌표</param>
     /// <param name="endy">도착지 y좌표</param>
-    public void AddMoveAction(int endx, int endy)
-    {
+    public void AddMoveAction(int endx, int endy) {
 
         bool isFirstMove = true;
 
         //맵 정보를 받아옴 / 유효성 확인
         List<List<int>> maps = mapScript.GetTilemapInfo();
-        if (maps == null)
-        {
+        if (maps == null) {
             //character debuger
             //Debug.Log("move action debuger : 잘못된 맵 정보");
             return;
@@ -553,38 +551,34 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
             }
         }
 
-        if(isFirstMove)//액션큐에 이동이 없다면 현재 위치로부터 출발.
+        if (isFirstMove)//액션큐에 이동이 없다면 현재 위치로부터 출발.
         {
             startPos = mapScript.Pos_To_TileXY(transform.position);
         }
 
         #region 유효성 검사.
 
-        if (startPos.x == int.MinValue && startPos.y == int.MinValue)
-        {
+        if (startPos.x == int.MinValue && startPos.y == int.MinValue) {
             //character debuger
             //Debug.Log("move action debuger : 캐릭터가 맵 바깥에 있음.");
             return;
         }
 
 
-        if (maps[startPos.y][startPos.x] == -1)
-        {
+        if (maps[startPos.y][startPos.x] == -1) {
             //character debuger
             //Debug.Log("move action debuger : 캐릭터가 벽에 있음.");
             return;
         }
 
 
-        if (endx < 0 || endx >= maps[0].Count || endy < 0 || endy >= maps.Count)
-        {
+        if (endx < 0 || endx >= maps[0].Count || endy < 0 || endy >= maps.Count) {
             //character debuger
             //Debug.Log("move action debuger : 도착지가 맵 바깥에 있음.");
             return;
         }
 
-        if (maps[endy][endx] == -1)
-        {
+        if (maps[endy][endx] == -1) {
             //character debuger
             //Debug.Log("move action debuger : 도착지로 벽이 지정됨.");
             return;
@@ -595,16 +589,14 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
         //경로에 대한 정보 확인 및 행동 등록.
         List<Vector2Int> pathL = AStar.FindPath(maps, startPos, new Vector2Int(endx, endy));
 
-        if (pathL == null)
-        {
+        if (pathL == null) {
             //character debuger
             //Debug.Log("move action debuger : 목적지까지의 경로가 존재하지 않음.");
             return;
         }
 
 
-        for (int i = pathL.Count - 1; i >= 0; i--)
-        {
+        for (int i = pathL.Count - 1; i >= 0; i--) {
 
             Vector3 endPosV3 = new Vector3(
                 pathL[i].x * unitMultiplizerX,
@@ -639,7 +631,7 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
     }
 
-   
+
 
 
     //행동 인터페이스 정의.
@@ -656,8 +648,7 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     #endregion
 
 
-    public STATE getState()
-    {
+    public STATE getState() {
         return curState;
     }
 
@@ -665,32 +656,29 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     /// 다음 행동 결정까지의 딜레이를 수동으로 지정
     /// </summary>
     /// <param name="_delay"></param>
-    public void setTimeDelayOffset(float _delay)
-    {
+    public void setTimeDelayOffset(float _delay) {
+
         timerTick = decideDelay - _delay;
+
     }
 
-    public void changeAcceptable(ACCEPTABLE _acc)
-    {
-        //character debuger
-        //Debug.Log("acceptable : " + _acc);
+    public void changeAcceptable(ACCEPTABLE _acc) {
+
         accState = _acc;
+
     }
 
     /// <summary>
     /// 카메라 각도와 이동 방향에 따른 스프라이트 좌우 지정
     /// </summary>
     /// <param name="_isRight">시점 기준 우방향으로 이동중인지 여부</param>
-    void changeDirectionSprite(bool _isRight)
-    {
+    void changeDirectionSprite(bool _isRight) {
         //character debuger
         //Debug.Log(_isRight ? "direction : Right" : "direction : Left");
 
-        if (_isRight)
-        {
+        if (_isRight) {
             spriteRenderer.flipX = true;
-        }
-        else {
+        } else {
             spriteRenderer.flipX = false;
         }
     }
@@ -706,8 +694,7 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     #region 맵 변화 인터페이스 영역
 
     //todo : 맵이 새로만들어질 때(맵이 없을 때) 비활성화 등등 해결법 고려
-    public void OnExtended(Vector3 _centerPos, int _width, int _height, int _unitWidth, int _unitHeight)
-    {
+    public void OnExtended(Vector3 _centerPos, int _width, int _height, int _unitWidth, int _unitHeight) {
         Debug.Log("크기 변경됨. + 이동영역 변환.");
 
         width = _width;
@@ -719,9 +706,8 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
         if (curPos.x < 0 ||
            curPos.x > (width - 1) * unitMultiplizerX ||
            curPos.z < -((height - 1) * unitMultiplizerZ) ||
-           curPos.z > 0)
-        {
-            
+           curPos.z > 0) {
+
             //행동중지 및 가까운 영역으로 이동
             setTimeDelayOffset(3);
             ChangeState(STATE.IDLE);
@@ -747,14 +733,12 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
     }
 
-    public void MapCreate(Vector3 _centerPos)
-    {
+    public void MapCreate(Vector3 _centerPos) {
         initCharacter();
         gameObject.SetActive(true);
     }
 
-    public void MapDestroy()
-    {
+    public void MapDestroy() {
         gameObject.SetActive(false);
     }
 
