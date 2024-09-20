@@ -70,14 +70,16 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
     //목적지와 이동방향, 초과 이동 확인용 거리 및 벡터
     private Vector3 destVec;
-    private Vector3 dirVec;
+    public Vector3 dirVec { get; private set; }
     private float lastDistance;
 
     //캐릭터의 속도
-    public float moveSpeed;
+    [SerializeField]
+    private float moveSpeed;
 
     //캐릭터의 높이 오프셋
-    public float heightOffset;
+    [SerializeField]
+    private float heightOffset;
 
     //ray의 각도에 따른 캐릭터 터치 위치 보정 백터
     Vector3 touchOffsetVec = Vector3.zero;
@@ -92,9 +94,6 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
     private Dictionary<STATE, int> aniHashDic;
     private BaseState[] stateArray;
-
-
-    private SpriteRenderer spriteRenderer;
 
     private MapManager mapScript;
 
@@ -127,7 +126,6 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     private void Awake() {
 
         animator = gameObject.GetComponentInChildren<Animator>();
-        spriteRenderer = gameObject.GetComponentInChildren<SpriteRenderer>();
 
         InitStateArray();
 
@@ -169,7 +167,6 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
         ChangeState(STATE.IDLE);
         changeAcceptable(ACCEPTABLE.ACCEPT);
-        changeDirectionSprite(true);
 
         destVec = Vector3.zero;
         dirVec = Vector3.zero;
@@ -197,16 +194,6 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
 
         AddTimerTick();
         ActionSwitcher();
-
-        //todo : 랜더러가 있는 자식으로 이동
-        #region 좌우방향 판정 및 스프라이트 플립
-
-        Vector3 v = Camera.main.transform.right;
-        float dot = Vector3.Dot(dirVec, v);
-
-        changeDirectionSprite(dot >= 0 ? true : false);
-
-        #endregion
 
     }
 
@@ -277,8 +264,10 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
                     myCharacter.setTimeDelayOffset(0);//바로 다음행동하도록 지시
                 }
             } else {
+
                 myCharacter.transform.Translate(myCharacter.dirVec * myCharacter.moveSpeed * Time.deltaTime);
                 myCharacter.lastDistance = curDistance;
+
             }
 
         }
@@ -732,24 +721,5 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
     }
 
     #endregion
-
-
-
-    //todo : 스프라이트를 가진 자식으로 코드 이동.
-    /// <summary>
-    /// 카메라 각도와 이동 방향에 따른 스프라이트 좌우 지정
-    /// </summary>
-    /// <param name="_isRight">시점 기준 우방향으로 이동중인지 여부</param>
-    void changeDirectionSprite(bool _isRight) {
-        //character debuger
-        //Debug.Log(_isRight ? "direction : Right" : "direction : Left");
-
-        if (_isRight) {
-            spriteRenderer.flipX = true;
-        } else {
-            spriteRenderer.flipX = false;
-        }
-    }
-
 
 }
