@@ -30,7 +30,7 @@ public interface Map_Create_Destroy_Observer {
 }
 
 
-class MapData {
+public class MapData {
 
     private GameObject flatParent;
     private GameObject wallWidthParent_1;
@@ -682,6 +682,9 @@ public partial class MapManager : MonoBehaviour {
     [SerializeField]
     private GameObject cornerWallObject;
 
+    [Header("FurnitureManager")]
+    [SerializeField]
+    FurnitureManager furnitureManager;
 
     //맵 크기의 확대/축소 행동에 대해 등록될 옵저버 목록.
     private List<ExtendObserver> ExtendObserverL = new List<ExtendObserver>();
@@ -704,6 +707,9 @@ public partial class MapManager : MonoBehaviour {
 
     private static MapManager instance;
 
+
+    private EditModeState editModeState;
+
     private void Awake() {
 
         if (instance == null) {
@@ -723,7 +729,7 @@ public partial class MapManager : MonoBehaviour {
 
         mapState = MapState.VIEW_MODE;
         iRayCaster = IRayCasterFactory.GetRayCaster();
-        initFurnitureDic();
+        editModeState = new EditModeState(furnitureManager);
 
     }
 
@@ -750,7 +756,7 @@ public partial class MapManager : MonoBehaviour {
     #region debug
 
     MapData savedMapData = null;
-    private MapData curMapData = null;
+    public MapData curMapData { get; private set; }
 
     public void SaveMap() {
 
@@ -939,17 +945,11 @@ public partial class MapManager : MonoBehaviour {
         switch (GetMapViewMode()) {
 
             case MapState.VIEW_MODE:
-                //todo : 뷰 모드일 때 돌아갈 업데이트.
-
-                //todo : 디버그용.
-                if (Input.GetKeyDown(KeyCode.Z)) {
-                    ChangeMapViewMode(MapState.EDIT_MODE);
-                }
-
+                //뷰 모드일 때 돌아갈 업데이트.
                 break;
 
             case MapState.EDIT_MODE:
-                EditModeUpdate();
+                editModeState.Update();
                 break;
 
             default:
@@ -964,6 +964,18 @@ public partial class MapManager : MonoBehaviour {
         return mapState;
     }
 
+    public void Debug_ChangeEditMode() {
+
+        if (GetMapViewMode() == MapState.VIEW_MODE) {
+            ChangeMapViewMode(MapState.EDIT_MODE);
+            editModeState.Enter();
+        } else {
+            ChangeMapViewMode(MapState.VIEW_MODE);
+            editModeState.Exit();
+        }
+
+    }
+
     public void ChangeMapViewMode(MapState _mapViewMode) {
 
         //디버그용.
@@ -972,6 +984,41 @@ public partial class MapManager : MonoBehaviour {
 
     }
 
+    private class EditModeState {
+
+        MapManager mapManager;
+        FurnitureManager furnitureManager;
+
+        public EditModeState(FurnitureManager _furnitureManager) {
+
+            mapManager = GetInstance();
+            furnitureManager = _furnitureManager;
+
+        }
+
+        public void Enter() {
+
+            foreach (Map_Create_Destroy_Observer _o in mapManager.MapCDObserverL) {
+                _o.MapDestroy();
+            }
+
+        }
+
+        public void Update() {
+
+            furnitureManager.EditModeUpdate();
+
+        }
+
+        public void Exit() {
+
+            foreach (Map_Create_Destroy_Observer _o in mapManager.MapCDObserverL) {
+                _o.MapCreate(mapManager.curMapData.GetCenterPos());
+            }
+
+        }
+
+    }
 
     #region 게터
 

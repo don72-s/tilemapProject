@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using static MapManager;
 
-
-internal class FlatInfo {
+public class FlatInfo {
 
 
     private GameObject flatObject;
@@ -137,9 +137,7 @@ internal class FlatInfo {
 
 }
 
-
-
-internal class FurnitureInfo {
+public class FurnitureInfo {
 
     private GameObject furniture;
     private GameObject furnitureRed;
@@ -343,7 +341,7 @@ internal class FurnitureInfo {
     }
 }
 
-internal static class FurnitureFactory {
+public static class FurnitureFactory {
 
     private static Dictionary<string, FurnitureBluePrint> furnitureDictionay = null;
 
@@ -392,7 +390,7 @@ internal static class FurnitureFactory {
 
 }
 
-public partial class MapManager : MonoBehaviour {
+public class FurnitureManager : MonoBehaviour {
 
     [SerializeField]
     private FurnitureBlueprintDictionary furnitureBlueprintDictionary;
@@ -401,75 +399,72 @@ public partial class MapManager : MonoBehaviour {
     public Button rotButton;
     public Button releaseButton;
 
+    MapManager mapManager;
     FurnitureInfo curForcusedFurniture = null;
-
+    IRayCaster iRayCaster;
 
     //todo : 타일별 변화 or 동작 요소들 구현 영역.
 
-    //mapmanager의 Start() 파생 영역
-    private void initFurnitureDic() {
-        //팩토리 초기화
+
+    private void Start() {
+        
         FurnitureFactory.InitFurnitureDic(furnitureBlueprintDictionary);
+        mapManager = MapManager.GetInstance();
+        iRayCaster = IRayCasterFactory.GetRayCaster();
+
+        testButton.onClick.AddListener(Btn_RegistFurniture);
+        rotButton.onClick.AddListener(Btn_RotateFurniture);
+        releaseButton.onClick.AddListener(Btn_ReleaseButton);
+
     }
 
+    private bool IsEditMode() {
 
-    /// <summary>
-    /// 모드전환 / 제거
-    /// </summary>
-    public void debug_ChangeViewMode() {
+        return mapManager.GetMapViewMode() == MapState.EDIT_MODE;
+    
+    }
 
-        if (GetMapViewMode() == MapState.VIEW_MODE) {
-            ChangeMapViewMode(MapState.EDIT_MODE);
+    public void Btn_RemoveFocusedFurniture() {
 
-            foreach (Map_Create_Destroy_Observer _o in MapCDObserverL) {
-                _o.MapDestroy();
-            }
+        if (!IsEditMode()) return;
 
-            return;
-        }
-
+        //가구제거버튼
         if (curForcusedFurniture != null) {
             curForcusedFurniture.DestroyFurnitureInfo();
             curForcusedFurniture = null;
             testButton.gameObject.SetActive(false);
             rotButton.gameObject.SetActive(false);
             releaseButton.gameObject.SetActive(false);
-        } else {
-            ChangeMapViewMode(MapState.VIEW_MODE);
-            foreach (Map_Create_Destroy_Observer _o in MapCDObserverL) {
-                _o.MapCreate(curMapData.GetCenterPos());
-            }
         }
-
 
     }
 
-    public Text statDebug;
-
+    //todo : 가구 생성 순회용 정적 변수.
     static int counter = 0;
     /// <summary>
     /// 가구생성용 디버그 + counter
     /// </summary>
-    public void debug_Makefurniture() {
+    public void Btn_Makefurniture() {
 
-        statDebug.text = "makeEntered";
-        if (curForcusedFurniture != null || GetMapViewMode() != MapState.EDIT_MODE || !CheckMapExist()) return;
+        if (!IsEditMode()) return;
+
+        if (curForcusedFurniture != null || 
+            !mapManager.CheckMapExist()) return;
 
         //디버그용 순회식 생성.
         curForcusedFurniture = FurnitureFactory.MakeFurniture("test" + ((counter % 3) + 1).ToString(), "가구 번호 : " + counter.ToString());
-        curForcusedFurniture.SetParent(curMapData.furnitureParent);
+        curForcusedFurniture.SetParent(mapManager.curMapData.furnitureParent);
 
         counter++;
-
-        statDebug.text = "make succed";
 
     }
 
     /// <summary>
     /// 가구 등록용 디버그
     /// </summary>
-    public void debug_registFurniture() {
+    public void Btn_RegistFurniture() {
 
+        if(!IsEditMode()) return;
         if (curForcusedFurniture == null) return;
 
         if (RegistFurniture(curForcusedFurniture.curTilePos, curForcusedFurniture.GetLeftTopVector(), curForcusedFurniture.GetRightDownVector())) {
@@ -484,9 +479,11 @@ public partial class MapManager : MonoBehaviour {
     /// <summary>
     /// 가구 회전용 디버그
     /// </summary>
-    public void debug_rotateFurniture() {
+    public void Btn_RotateFurniture() {
 
+        if (!IsEditMode()) return;
         if (curForcusedFurniture == null) return;
+
         curForcusedFurniture.RotateFurniture();
 
         bool isValid = ValidCheck(curForcusedFurniture.curTilePos, curForcusedFurniture.GetLeftTopVector(), curForcusedFurniture.GetRightDownVector());
@@ -498,14 +495,14 @@ public partial class MapManager : MonoBehaviour {
         }
 
         //지속적으로 상태 업데이트
-        curForcusedFurniture.SetPosition(curMapData.GetFlatList()[(int)curForcusedFurniture.curTilePos.y][(int)curForcusedFurniture.curTilePos.x].GetFlatObj().transform.position + new Vector3(0, 1.5f, 0) + curForcusedFurniture.GetOffsetPosVec());
-
+        curForcusedFurniture.SetPosition(mapManager.curMapData.GetFlatList()[(int)curForcusedFurniture.curTilePos.y][(int)curForcusedFurniture.curTilePos.x].GetFlatObj().transform.position + new Vector3(0, 1.5f, 0) + curForcusedFurniture.GetOffsetPosVec());
 
     }
 
-
-    public void debug_releaseButton() {
-
+    /// <summary>
+    /// 모든 버튼을 숨기는 함수.
+    /// </summary>
+    public void Btn_ReleaseButton() {
 
         testButton.gameObject.SetActive(false);
         rotButton.gameObject.SetActive(false);
@@ -516,9 +513,7 @@ public partial class MapManager : MonoBehaviour {
     /// <summary>
     /// update의 파생.
     /// </summary>
-    private void EditModeUpdate() {
-
-
+    public void EditModeUpdate() {
 
         //버튼 위치 지정
         if (curForcusedFurniture != null) {
@@ -570,13 +565,13 @@ public partial class MapManager : MonoBehaviour {
         //[컴퓨터용 디버그] - 버튼 대응 함수를 호출.
         //들고있는 가구를 등록.
         if (Input.GetKeyDown(KeyCode.P) && curForcusedFurniture != null) {
-            debug_registFurniture();
+            Btn_RegistFurniture();
         }
 
 
         //가구를 회전.
         if (Input.GetKeyDown(KeyCode.R) && curForcusedFurniture != null) {
-            debug_rotateFurniture();
+            Btn_RotateFurniture();
 
         }
 
@@ -593,7 +588,7 @@ public partial class MapManager : MonoBehaviour {
     /// <returns>유효할 경우 true 반환.</returns>
     private bool ValidCheck(Vector2 _curPos, Vector2 _leftTopVec, Vector2 _rightDownVec) {
 
-        if (!CheckMapExist()) {
+        if (!mapManager.CheckMapExist()) {
             Debug.Log("맵이 존재하지 않음. 가구 유효성 체크 불가능.");
             return false;
         }
@@ -606,7 +601,7 @@ public partial class MapManager : MonoBehaviour {
         int rightOffset = (int)_rightDownVec.x;
         int downOffset = (int)_rightDownVec.y;
 
-        if (x + leftOffset < 0 || x + rightOffset >= GetWidth() || y + topOffset < 0 || y + downOffset >= GetHeight()) {
+        if (x + leftOffset < 0 || x + rightOffset >= mapManager.GetWidth() || y + topOffset < 0 || y + downOffset >= mapManager.GetHeight()) {
             Debug.Log("가구가 영역에서 벗어남.");
             return false;
         }
@@ -615,7 +610,7 @@ public partial class MapManager : MonoBehaviour {
 
             for (int j = y + topOffset; j <= y + downOffset; j++) {
 
-                if (!curMapData.GetFlatList()[j][i].GetIsEmpty()) {
+                if (!mapManager.curMapData.GetFlatList()[j][i].GetIsEmpty()) {
                     //충분한 가구 공간이 확보되지 않음.
                     return false;
                 }
@@ -653,7 +648,7 @@ public partial class MapManager : MonoBehaviour {
         int downOffset = (int)_rightDownVec.y;
 
         List<Vector2> list = new List<Vector2>();
-        List<List<FlatInfo>> flatList = curMapData.GetFlatList();
+        List<List<FlatInfo>> flatList = mapManager.curMapData.GetFlatList();
 
         for (int i = x + leftOffset; i <= x + rightOffset; i++) {
             for (int j = y + topOffset; j <= y + downOffset; j++) {
@@ -692,115 +687,25 @@ public partial class MapManager : MonoBehaviour {
         }
 
 
-        float j = v.x + GetUnitWidth() / 2;
-        float i = -(v.z - GetUnitHeight() / 2);
+        float j = v.x + mapManager.GetUnitWidth() / 2;
+        float i = -(v.z - mapManager.GetUnitHeight() / 2);
 
-        if (j > 0 && j < GetWidth() * GetUnitWidth() && i > 0 && i < GetHeight() * GetUnitHeight()) {
-            j = (int)(j / GetUnitWidth());
-            i = (int)(i / GetUnitHeight());
+        if (j > 0 && j < mapManager.GetWidth() * mapManager.GetUnitWidth() && i > 0 && i < mapManager.GetHeight() * mapManager.GetUnitHeight()) {
+
+            j = (int)(j / mapManager.GetUnitWidth());
+            i = (int)(i / mapManager.GetUnitHeight());
 
         } else {
+
             Debug.Log("outer flat area detected");
             return Vector2.negativeInfinity;
+
         }
 
         return new Vector2(i, j);
 
     }
 
-
-
-    //todo : 아래 분기문 제거.
-    /// <summary>
-    /// 화면이 클릭되었을 때 flat필터를 이용해 바닥이 클릭되었는지 확인하는 함수.
-    /// </summary>
-    /// <param name="_mButton">마우스 버튼의 종류</param>
-    private void MapClicked(MouseButton _mButton) {
-
-        //좌표의 flat유효성 확인.
-        Vector2 flatPos = GetClickedFlatPos();
-
-        if (flatPos.Equals(Vector2.negativeInfinity)) {
-            Debug.Log("유효한 flat이 아님");
-            return;
-        }
-
-        int i = (int)flatPos.x;
-        int j = (int)flatPos.y;
-
-
-        List<List<FlatInfo>> flatList = curMapData.GetFlatList();
-
-        //todo : 동작 분리 => 모드 상태와 조합하여 동작 분기
-        switch (_mButton) {
-
-            //배치된 가구 클릭에 대한 행동.
-            case MouseButton.LEFT:
-
-                if (flatList[i][j].GetIsEmpty()) {
-                    //가구를 차지하고 있는 타일이 아님.
-                    break;
-                }
-
-                Vector2 baseVec = flatList[i][j].GetBaseIdx();
-                List<Vector2> vectors = flatList[(int)baseVec.x][(int)baseVec.y].GetSubIdxes();
-
-                foreach (Vector2 _v in vectors) {
-                    flatList[(int)_v.x][(int)_v.y].ReleaseEmpty();
-                }
-
-                curForcusedFurniture = flatList[(int)baseVec.x][(int)baseVec.y].ReleaseFurnitureObject();
-
-                break;
-
-            case MouseButton.RIGHT:
-
-                //들고있는 가구의 회전에 대한 행동.
-                curForcusedFurniture.RotateFurniture();
-
-                break;
-
-            case MouseButton.MIDDLE:
-                //들고있는 가구의 등록에 대한 행동.
-                if (RegistFurniture(new Vector2(j, i), curForcusedFurniture.GetLeftTopVector(), curForcusedFurniture.GetRightDownVector())) {
-                    curForcusedFurniture = null;
-                }
-
-
-                break;
-
-            case MouseButton.NONE:
-
-
-                #region 위치 및 유효성
-
-                if (curForcusedFurniture != null) {
-
-                    bool isValid = ValidCheck(new Vector2(flatPos.y, flatPos.x), curForcusedFurniture.GetLeftTopVector(), curForcusedFurniture.GetRightDownVector());
-
-                    if (isValid) {
-                        curForcusedFurniture.SetValid();
-                    } else {
-                        curForcusedFurniture.SetInvalid();
-                    }
-
-                    //지속적으로 상태 업데이트
-                    curForcusedFurniture.SetPosition(flatList[i][j].GetFlatObj().transform.position + new Vector3(0, 1.5f, 0) + curForcusedFurniture.GetOffsetPosVec());
-                    curForcusedFurniture.curTilePos.Set(j, i);
-                }
-
-                #endregion
-
-                break;
-
-
-            default:
-
-                break;
-
-        }
-
-    }
 
 
     private void SetFurniturePos(FurnitureInfo _furnitureInfo) {
@@ -829,7 +734,7 @@ public partial class MapManager : MonoBehaviour {
 
 
 
-        List<List<FlatInfo>> flatList = curMapData.GetFlatList();
+        List<List<FlatInfo>> flatList = mapManager.curMapData.GetFlatList();
 
         if (curForcusedFurniture != null) {
 
@@ -865,7 +770,7 @@ public partial class MapManager : MonoBehaviour {
         int j = (int)flatPos.y;
 
 
-        List<List<FlatInfo>> flatList = curMapData.GetFlatList();
+        List<List<FlatInfo>> flatList = mapManager.curMapData.GetFlatList();
 
         if (flatList[i][j].GetIsEmpty()) {
             //가구를 차지하고 있는 타일이 아님.
