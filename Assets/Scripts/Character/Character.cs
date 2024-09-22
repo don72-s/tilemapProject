@@ -168,9 +168,6 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
         ChangeState(STATE.IDLE);
         changeAcceptable(ACCEPTABLE.ACCEPT);
 
-        destVec = Vector3.zero;
-        dirVec = Vector3.zero;
-
         ClearActionQueue();
 
         width = mapScript.GetWidth();
@@ -178,14 +175,30 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
         unitMultiplizerX = mapScript.GetUnitWidth();
         unitMultiplizerZ = mapScript.GetUnitHeight();
 
+        Reposition();
+
+    }
+
+    /// <summary>
+    /// 비어있는 flat으로 캐릭터를 이동
+    /// </summary>
+    public void Reposition() {
+
+        destVec = Vector3.zero;
+        dirVec = Vector3.zero;
+
         Vector3 initPos = mapScript.GetEmptyFlatPos();
 
         if (initPos == Vector3.negativeInfinity) {
+
             Debug.LogError("빈 좌표공간이 없음.");
             transform.position = new Vector3(0, heightOffset, 0);
+
         } else {
+
             initPos.y = heightOffset;
             transform.position = initPos;
+
         }
 
     }
@@ -353,11 +366,10 @@ public class Character : MonoBehaviour, ExtendObserver, Map_Create_Destroy_Obser
                                      myCharacter.transform.position.z
                                  )
                              );
-                             
-            
-            
+
+
             if (myCharacter.mapScript.GetTilemapInfo()[pos.y][pos.x] == -1) {
-                myCharacter.initCharacter();
+                myCharacter.Reposition();
             }
 
         }
